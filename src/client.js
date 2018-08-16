@@ -1,6 +1,7 @@
 class Client {
   /**
    * Client
+   *
    * @param store
    * @param http
    */
@@ -43,9 +44,9 @@ class Client {
    * @param options
    * @returns {PromiseLike<*>}
    */
-  get(type, id, options = {}) {
+  get(type, id, params) {
     return this.http
-        .get('/' + type + (id ? '/' + id : ''), { params: options })
+        .get('/' + type + (id ? '/' + id : ''), { params })
         .then(this.store.materializeRecords.bind(this.store));
   }
 

@@ -2,7 +2,7 @@
   "name": "vue-jsonapi",
   "version": "0.1.0",
   "description": "jsonapi.org API layer for Vue.js applications",
-  "main": "index.js",
+  "module": "src/vue-jsonapi.esm.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/arcreative/vue-jsonapi/issues"
   },
-  "homepage": "https://github.com/arcreative/vue-jsonapi#readme"
+  "homepage": "https://github.com/arcreative/vue-jsonapi#readme",
+  "dependencies": {
+    "lodash-es": "^4.17.10"
+  }
 }

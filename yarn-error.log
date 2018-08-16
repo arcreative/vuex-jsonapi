@@ -1,0 +1,65 @@
+Arguments: 
+  /usr/local/Cellar/node/10.1.0/bin/node /usr/local/bin/yarn add lodsh-es --save
+
+PATH: 
+  /usr/local/opt/node@8/bin:/usr/local/opt/libxml2/bin:/usr/local/opt/openssl/bin:/Users/adam/.rvm/gems/ruby-2.4.1/bin:/Users/adam/.rvm/gems/ruby-2.4.1@global/bin:/Users/adam/.rvm/rubies/ruby-2.4.1/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/adam/.rvm/bin:/usr/local/bin:/usr/bin:/usr/bin:/bin:/sbin:/usr/sbin:/usr/local/sbin:/Users/adam/scripts:/Users/adam/Library/Android/sdk/build-tools/28.0.0:/Users/adam/.rvm/bin
+
+Yarn version: 
+  1.7.0
+
+Node version: 
+  10.1.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/lodsh-es: Not found
+      at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:65656:18)
+      at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:134675:22)
+      at Request.emit (events.js:182:13)
+      at Request.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:135658:10)
+      at Request.emit (events.js:182:13)
+      at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:135578:12)
+      at Object.onceWrapper (events.js:273:13)
+      at IncomingMessage.emit (events.js:187:15)
+      at endReadableNT (_stream_readable.js:1086:12)
+      at process._tickCallback (internal/process/next_tick.js:63:19)
+
+npm manifest: 
+  {
+    "name": "vue-jsonapi",
+    "version": "0.1.0",
+    "description": "jsonapi.org API layer for Vue.js applications",
+    "main": "src/vue-jsonapi.esm.js",
+    "module": "src/vue-jsonapi.esm.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com/arcreative/vue-jsonapi.git"
+    },
+    "keywords": [
+      "JSONAPI::Resources",
+      "jsonapi",
+      "jsonapi.org",
+      "vue",
+      "vue.js",
+      "vuex",
+      "api"
+    ],
+    "author": "Adam Robertson <adam@arcreative.net>",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/arcreative/vue-jsonapi/issues"
+    },
+    "homepage": "https://github.com/arcreative/vue-jsonapi#readme",
+    "dependencies": {}
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

@@ -16,8 +16,10 @@ class Store {
    * @param type
    * @returns {Record}
    */
-  createRecord(type) {
-    return new Record(type);
+  createRecord(type, id) {
+    let record = new Record(type);
+    record.id = id;
+    return record;
   }
 
   /**
@@ -40,6 +42,12 @@ class Store {
    * @returns {Record|Record[]}
    */
   materializeRecords(data) {
+    // If HTTP response and included is found, materialize all included records first so they're available to the
+    // main records
+    if (data && data.data && data.data.included) {
+      this.materializeRecords(data.data.included);
+    }
+    // If HTTP response, set data to response's data element
     if (data && data.data && data.data.data) {
       data = data.data.data;
     }
@@ -52,6 +60,7 @@ class Store {
     forEach(data, item => {
       let record = this.getRecord(item.type, item.id);
       record.materialize(item);
+      record.hydrate(this);
       ret.push(record);
     });
     return single ? ret[0] : ret;

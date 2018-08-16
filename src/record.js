@@ -1,4 +1,5 @@
 import extend from 'lodash-es/extend'
+import forEach from 'lodash-es/forEach'
 
 class Record {
   /**
@@ -30,6 +31,21 @@ class Record {
     this.data.relationships = extend(this.data.relationships, data.relationships);
     this.data.meta = extend(this.data.meta, data.meta);
     return this;
+  }
+
+  /**
+   * Hydrates top level with attributes and available relationships from store
+   *
+   * @param store
+   */
+  hydrate(store) {
+    extend(this, this.data.attributes);
+    forEach(this.data.relationships, (item, name) => {
+      let data = item.data;
+      if (!data) return;
+      if (!data.type || !data.id) return;
+      this[name] = store.getRecord(data.type, data.id);
+    });
   }
 }
 

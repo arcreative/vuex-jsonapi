@@ -1,3 +1,5 @@
+import Promise from 'es6-promise'
+
 class Client {
   /**
    * Client
@@ -15,7 +17,8 @@ class Client {
    *
    * @param method
    * @param url
-   * @returns {PromiseLike<*>}
+   * @param data
+   * @returns {Promise<*>}
    */
   request(method, url, data) {
     return this.http({
@@ -30,7 +33,7 @@ class Client {
    *
    * @param method
    * @param url
-   * @returns {PromiseLike<Record|Record[]>}
+   * @returns {Promise<Record|Record[]>}
    */
   requestRecords(method, url) {
     return this.request(method, url).then(this.store.materializeRecords.bind(this.store));
@@ -41,8 +44,8 @@ class Client {
    *
    * @param type
    * @param id
-   * @param options
-   * @returns {PromiseLike<*>}
+   * @param params
+   * @returns {Promise<*>}
    */
   get(type, id, params) {
     return this.http
@@ -56,7 +59,7 @@ class Client {
    * @param type
    * @param id
    * @param options
-   * @returns {PromiseLike<Record|Record[]>}
+   * @returns {Promise<Record|Record[]>}
    */
   find(type, id, options = {}) {
     if (id instanceof Object) {

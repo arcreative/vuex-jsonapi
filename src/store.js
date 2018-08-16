@@ -71,7 +71,7 @@ class Store {
   /**
    * Hydrates top level with attributes and available relationships from store
    *
-   * @param store
+   * @param record
    */
   hydrateRecord(record) {
     extend(record, record.data.attributes);

@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/arcreative/vue-jsonapi#readme",
   "dependencies": {
+    "es6-promise": "^4.2.4",
     "lodash-es": "^4.17.10"
   }
 }

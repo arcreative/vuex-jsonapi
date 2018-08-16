@@ -1,4 +1,5 @@
 import forEach from 'lodash-es/forEach'
+import extend from 'lodash-es/extend'
 
 import Record from './record'
 
@@ -14,9 +15,10 @@ class Store {
    * Returns a new record of `type`
    *
    * @param type
+   * @param id
    * @returns {Record}
    */
-  createRecord(type, id) {
+  createRecord(type, id = null) {
     let record = new Record(type);
     record.id = id;
     return record;
@@ -60,10 +62,25 @@ class Store {
     forEach(data, item => {
       let record = this.getRecord(item.type, item.id);
       record.materialize(item);
-      record.hydrate(this);
+      this.hydrateRecord(record);
       ret.push(record);
     });
     return single ? ret[0] : ret;
+  }
+
+  /**
+   * Hydrates top level with attributes and available relationships from store
+   *
+   * @param store
+   */
+  hydrateRecord(record) {
+    extend(record, record.data.attributes);
+    forEach(record.data.relationships, (item, name) => {
+      let data = item.data;
+      if (!data) return;
+      if (!data.type || !data.id) return;
+      record[name] = this.getRecord(data.type, data.id);
+    });
   }
 }
 

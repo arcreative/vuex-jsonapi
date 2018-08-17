@@ -1,4 +1,5 @@
 import extend from 'lodash-es/extend'
+import forEach from 'lodash-es/forEach'
 
 class Record {
   /**
@@ -30,6 +31,24 @@ class Record {
     this.data.relationships = extend(this.data.relationships, data.relationships);
     this.data.meta = extend(this.data.meta, data.meta);
     return this;
+  }
+
+  /**
+   * Gets an attribute without throwing a traversal error
+   *
+   * @param attribute
+   */
+  get(path) {
+    path = path.split('.');
+    let val = this;
+    forEach(path, part => {
+      if (val && val[part]) {
+        val = val[part];
+      } else {
+        val = null;
+      }
+    });
+    return val;
   }
 }
 

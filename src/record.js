@@ -36,7 +36,7 @@ class Record {
   /**
    * Gets an attribute without throwing a traversal error
    *
-   * @param attribute
+   * @param path
    */
   get(path) {
     path = path.split('.');

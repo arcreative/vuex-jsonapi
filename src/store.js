@@ -78,8 +78,14 @@ class Store {
     forEach(record.data.relationships, (item, name) => {
       let data = item.data;
       if (!data) return;
-      if (!data.type || !data.id) return;
-      record[name] = this.getRecord(data.type, data.id);
+      if (data.length) {
+        record[name] = data.map(item => {
+          return this.getRecord(item.type, item.id);
+        })
+      } else {
+        if (!data.type || !data.id) return;
+        record[name] = this.getRecord(data.type, data.id);
+      }
     });
   }
 }

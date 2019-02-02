@@ -66,16 +66,7 @@ class Client {
       options = id;
       id = null;
     }
-    return new Promise((resolve, reject) => {
-      if (id) {
-        let record = this.store.getRecord(type, id);
-        if (record.persisted) {
-          resolve(record); // Resolve, but continue loading
-        }
-      }
-      this.get(type, id, options).then(resolve).catch(reject);
-    });
-
+    return this.get(type, id, options);
   }
 }
 

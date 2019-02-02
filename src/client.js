@@ -70,7 +70,7 @@ class Client {
       if (id) {
         let record = this.store.getRecord(type, id);
         if (record.persisted) {
-          return resolve(record);
+          resolve(record); // Resolve, but continue loading
         }
       }
       this.get(type, id, options).then(resolve).catch(reject);

@@ -7,8 +7,8 @@ export default {
   Client,
   Record,
   Store,
-  createClient: (httpClient) => {
-    let store = new Store()
+  createClient: (Vue, state, httpClient) => {
+    let store = new Store(Vue, state);
     return new Client(store, httpClient)
   }
 };

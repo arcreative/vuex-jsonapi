@@ -2,9 +2,16 @@
   "name": "vue-jsonapi",
   "version": "0.1.0",
   "description": "jsonapi.org API layer for Vue.js applications",
-  "module": "src/vue-jsonapi.esm.js",
+  "main": "dist/vue-jsonapi.cjs.js",
+  "module": "dist/vue-jsonapi.esm.js",
+  "browser": "dist/vue-jsonapi.umd.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx rollup -c",
+    "dev": "npx rollup -c -w",
+    "watch": "npm run dev"
   },
   "repository": {
     "type": "git",
@@ -28,5 +35,10 @@
   "dependencies": {
     "es6-promise": "^4.2.4",
     "lodash-es": "^4.17.10"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "rollup": "^1.1.2",
+    "rollup-plugin-babel": "^4.3.2"
   }
 }

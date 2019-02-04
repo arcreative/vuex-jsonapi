@@ -1,5 +1,3 @@
-import Promise from 'es6-promise'
-
 class Client {
   /**
    * Client
@@ -20,7 +18,7 @@ class Client {
    * @param data
    * @returns {Promise<*>}
    */
-  request(method, url, data) {
+  request(method, url, data = null) {
     return this.http({
       method: method.toLowerCase(),
       url,

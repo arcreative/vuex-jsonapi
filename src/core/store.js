@@ -1,5 +1,4 @@
-import forEach from 'lodash-es/forEach'
-import extend from 'lodash-es/extend'
+import { extend, forEach } from 'lodash-es'
 
 import Record from './record'
 

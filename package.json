@@ -1,10 +1,10 @@
 {
-  "name": "vue-jsonapi",
+  "name": "vuex-jsonapi",
   "version": "0.1.0",
   "description": "jsonapi.org API layer for Vue.js applications",
-  "main": "dist/vue-jsonapi.cjs.js",
-  "module": "dist/vue-jsonapi.esm.js",
-  "browser": "dist/vue-jsonapi.umd.js",
+  "main": "dist/vuex-jsonapi.cjs.js",
+  "module": "dist/vuex-jsonapi.esm.js",
+  "browser": "dist/vuex-jsonapi.umd.js",
   "files": [
     "dist"
   ],
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/arcreative/vue-jsonapi.git"
+    "url": "git+ssh://git@github.com/arcreative/vuex-jsonapi.git"
   },
   "keywords": [
     "JSONAPI::Resources",
@@ -29,9 +29,9 @@
   "author": "Adam Robertson <adam@arcreative.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/arcreative/vue-jsonapi/issues"
+    "url": "https://github.com/arcreative/vuex-jsonapi/issues"
   },
-  "homepage": "https://github.com/arcreative/vue-jsonapi#readme",
+  "homepage": "https://github.com/arcreative/vuex-jsonapi#readme",
   "dependencies": {
     "es6-promise": "^4.2.4",
     "lodash-es": "^4.17.10"

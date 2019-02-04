@@ -26,7 +26,7 @@ export default {
     let apiClient = new Client(store, axiosClient);
 
     // Hello, world!
-    console.info('VueJsonapi installed.');
+    console.info('VuexJsonapi installed.');
 
     return {
       apiClient,

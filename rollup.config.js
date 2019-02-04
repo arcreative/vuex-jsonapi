@@ -10,7 +10,7 @@ export default [
   {
     input: 'src/index.esm.js',
     output: {
-      name: 'VueJsonapi',
+      name: 'VuexJsonapi',
       file: pkg.browser,
       format: 'umd'
     },

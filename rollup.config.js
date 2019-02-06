@@ -1,10 +1,16 @@
 import babel from 'rollup-plugin-babel';
+import replace from 'rollup-plugin-replace';
 
 import pkg from './package.json';
 
-let babelPlugin = babel({
-  exclude: 'node_modules/**'
-});
+let plugins = [
+  babel({
+    exclude: 'node_modules/**'
+  }),
+  replace({
+    __VERSION__: pkg.version
+  })
+];
 
 export default [
   {
@@ -14,9 +20,7 @@ export default [
       file: pkg.browser,
       format: 'umd'
     },
-    plugins: [
-      babelPlugin
-    ]
+    plugins: plugins
   },
 
   {
@@ -26,8 +30,6 @@ export default [
       { file: pkg.main, format: 'cjs' },
       { file: pkg.module, format: 'es' }
     ],
-    plugins: [
-      babelPlugin
-    ]
+    plugins: plugins
   }
 ];

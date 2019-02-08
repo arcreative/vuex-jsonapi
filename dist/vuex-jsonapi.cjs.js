@@ -238,17 +238,17 @@ class Store {
 
 }
 
-var mapChannel = (channel => {
+var mapChannel = ((channel, name = null) => {
   return {
-    model() {
+    [name ? name : 'model']() {
       return this.$store.getters.channel(channel);
     },
 
-    loading() {
+    [name ? name + 'Loading' : 'loading']() {
       return this.$store.getters.loading(channel);
     },
 
-    error() {
+    [name ? name + 'Error' : 'error']() {
       return this.$store.getters.error(channel);
     }
 

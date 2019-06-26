@@ -1,16 +1,16 @@
-import { cloneDeep } from 'lodash-es'
+import cloneDeep from 'lodash-es/cloneDeep'
 
 import Client from './core/client'
 import Record from './core/record'
 import Store from './core/store'
 
-import mapChannel from './support/map-channel'
-import parseRequestError from './support/parse-request-error'
-
 import actions from './extensions/actions'
 import getters from './extensions/getters'
 import mutations from './extensions/mutations'
 import state from './extensions/state'
+
+import mapChannel from './support/map-channel'
+import RequestError from './support/request-error'
 
 export default {
   version: '__VERSION__',
@@ -25,9 +25,6 @@ export default {
     let store = new Store(Vue, state.models);
     let apiClient = new Client(store, axiosClient);
 
-    // Hello, world!
-    console.info('VuexJsonapi installed.');
-
     return {
       apiClient,
       state: stateClone,
@@ -39,9 +36,12 @@ export default {
 };
 
 export {
+  // Core
   Client,
   Record,
   Store,
-  parseRequestError,
-  mapChannel
+
+  // Support
+  mapChannel,
+  RequestError,
 }

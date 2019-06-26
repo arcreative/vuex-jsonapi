@@ -66,6 +66,26 @@ class Client {
     }
     return this.get(type, id, options);
   }
+
+  /**
+   * Wrapped post/put/patch request
+   *
+   * @param record
+   * @param options
+   * @returns {Promise<*>}
+   */
+  save(record, options = {}) {
+    return this
+      .http[record.id ? 'patch' : 'post'](
+        '/' + record.type + (record.id ? '/' + record.id : ''),
+        this.store.serializeRecord(record),
+        options,
+      )
+      .then(res => {
+        this.store.persist(record, res.data.data.id);
+        return this.store.materializeRecords.call(this.store, res);
+      });
+  }
 }
 
 export default Client;

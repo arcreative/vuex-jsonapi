@@ -8,4 +8,7 @@ export default {
   updateLoading(state, { channel, value }) {
     this._vm.$set(state.loading, channel, value);
   },
+  updateNoRecords(state, { channel, value }) {
+    this._vm.$set(state.noRecords, channel, value);
+  },
 };

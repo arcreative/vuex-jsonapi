@@ -3,4 +3,6 @@ export default {
   channels: {},
   loading: {},
   error: {},
+  errors: {},
+  noRecords: {},
 }

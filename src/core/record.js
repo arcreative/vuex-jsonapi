@@ -1,19 +1,23 @@
-import { extend, forEach } from 'lodash-es'
+import extend from 'lodash-es/extend'
+import forEach from 'lodash-es/forEach'
 
 class Record {
   /**
    * Record
    *
    * @param type
+   * @param data
+   * @returns {Record.Record}
    */
-  constructor(type) {
+  constructor(type, data = {}) {
     this.type = type;
-    this.persisted = false;
-    this.data = {
+    this._persisted = false;
+    this._data = {
       attributes: {},
       relationships: {},
       meta: {},
     };
+    Object.assign(this, data);
   }
 
   /**
@@ -23,12 +27,12 @@ class Record {
    * @returns {Record}
    */
   materialize(data = { id, type, attributes: {}, relationships: {}, meta: {} }) {
-    this.persisted = true;
+    this._persisted = true;
     this.id = data.id;
     this.type = data.type;
-    this.data.attributes = extend(this.data.attributes, data.attributes);
-    this.data.relationships = extend(this.data.relationships, data.relationships);
-    this.data.meta = extend(this.data.meta, data.meta);
+    this._data.attributes = extend(this._data.attributes, data.attributes);
+    this._data.relationships = extend(this._data.relationships, data.relationships);
+    this._data.meta = extend(this._data.meta, data.meta);
     return this;
   }
 
@@ -48,6 +52,15 @@ class Record {
       }
     });
     return val;
+  }
+
+  /**
+   * Creates an editable clone that will deserialize into the same record
+   *
+   * @returns {Record}
+   */
+  clone() {
+    return Object.assign(new Record(this.type), this);
   }
 }
 

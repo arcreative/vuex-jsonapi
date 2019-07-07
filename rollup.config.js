@@ -1,5 +1,6 @@
-import babel from 'rollup-plugin-babel';
-import replace from 'rollup-plugin-replace';
+import babel from 'rollup-plugin-babel'
+import replace from 'rollup-plugin-replace'
+import resolve from 'rollup-plugin-node-resolve'
 
 import pkg from './package.json';
 
@@ -9,7 +10,8 @@ let plugins = [
   }),
   replace({
     __VERSION__: pkg.version
-  })
+  }),
+  resolve()
 ];
 
 export default [
@@ -18,7 +20,8 @@ export default [
     output: {
       name: 'VuexJsonapi',
       file: pkg.browser,
-      format: 'umd'
+      format: 'umd',
+      exports: 'named'
     },
     plugins: plugins
   },
@@ -27,8 +30,8 @@ export default [
     input: 'src/index.esm.js',
     external: Object.keys(pkg.dependencies),
     output: [
-      { file: pkg.main, format: 'cjs' },
-      { file: pkg.module, format: 'es' }
+      { file: pkg.main, format: 'cjs', exports: 'named' },
+      { file: pkg.module, format: 'es', exports: 'named' }
     ],
     plugins: plugins
   }

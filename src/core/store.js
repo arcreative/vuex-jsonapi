@@ -89,7 +89,7 @@ class Store {
         var prop = record[key];
         if (prop instanceof Record) {
           body.relationships[key] = { data: { type: prop.type, id: prop.id } };
-        } else if (prop instanceof Array && prop[0] instanceof Record) { // TODO: make this better--needs relationship awareness
+        } else if (prop instanceof Array && prop[0] instanceof Record) {
           body.relationships[key] = prop.map((item) => {
             return {data: {type: item.type, id: item.id}}
           });

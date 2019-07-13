@@ -43,6 +43,22 @@ export default (apiClient) => {
         }, error => {
           this._vm.$emit('didSaveError', new RequestError(error, { record, suppress: suppress || suppressError }));
         });
+    },
+    delete({ commit }, { record, suppress = false, suppressSuccess = false, suppressError = false }) {
+      apiClient
+        .delete(record)
+        .then(() => {
+          // Notify of save/create/update
+          this._vm.$emit('didDeleteRecord', { record, suppress: suppress || suppressSuccess });
+
+          // Notify that one or more records of this type changed
+          let type = record.type.split('_').map(part => {
+            return part[0].toUpperCase() + part.slice(1, part.length);
+          }).join('');
+          this._vm.$emit('didUpdate' + type, { record });
+        }, error => {
+          this._vm.$emit('didDeleteError', new RequestError(error, { record, suppress: suppress || suppressError }));
+        });
     }
   };
 }

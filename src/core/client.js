@@ -86,6 +86,16 @@ class Client {
         return this.store.materializeRecords.call(this.store, res);
       });
   }
+
+  /**
+   * Wrapped delete request
+   *
+   * @param record
+   * @returns {Promise<*>}
+   */
+  delete(record) {
+    return this.http.delete('/' + record.type + '/' + record.id);
+  }
 }
 
 export default Client;

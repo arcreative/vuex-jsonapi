@@ -4420,7 +4420,7 @@
             return !isEqual(a.sort(), b.sort());
           } else if (relationship.data instanceof Object) {
             // Belongs to
-            if (current.id !== relationship.data.id || current.type !== relationship.data.type) {
+            if (!!current !== !!relationship.data || current.id !== relationship.data.id || current.type !== relationship.data.type) {
               return true;
             }
           } else {

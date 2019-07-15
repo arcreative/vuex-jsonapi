@@ -29,7 +29,7 @@ export default (apiClient) => {
     save({ commit }, { record, params = {}, suppress = false, suppressSuccess = false, suppressError = false }) {
       let persisted = record._persisted;
       apiClient
-        .save(record, params)
+        .save(record, { params })
         .then(record => {
           // Notify of save/create/update
           this._vm.$emit('didSaveRecord', { record, suppress: suppress || suppressSuccess });

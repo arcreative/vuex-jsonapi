@@ -4928,7 +4928,9 @@ var actions = (apiClient => {
       suppressError = false
     }) {
       let persisted = record._persisted;
-      apiClient.save(record, params).then(record => {
+      apiClient.save(record, {
+        params
+      }).then(record => {
         // Notify of save/create/update
         this._vm.$emit('didSaveRecord', {
           record,

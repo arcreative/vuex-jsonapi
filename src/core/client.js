@@ -15,10 +15,10 @@ class Client {
    *
    * @param method
    * @param url
-   * @param data
+   * @param options
    * @returns {Promise<*>}
    */
-  request(method, url, data = null) {
+  request(method, url, { data }) {
     return this.http({
       method: method.toLowerCase(),
       url,
@@ -31,10 +31,11 @@ class Client {
    *
    * @param method
    * @param url
+   * @param options
    * @returns {Promise<Record|Record[]>}
    */
-  requestRecords(method, url) {
-    return this.request(method, url).then(this.store.materializeRecords.bind(this.store));
+  requestRecords(method, url, options = {}) {
+    return this.request(method, url, options).then(this.store.materializeRecords.bind(this.store));
   }
 
   /**

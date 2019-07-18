@@ -27,6 +27,16 @@ export default class RequestError extends Error {
     return get(this, 'httpError.response.data.errors') || [];
   }
 
+  attributeErrors() {
+    let ret = {};
+    this.errors().map(error => {
+      if (error && error.code === '100') {
+        ret[error.source.pointer.split('/').pop()] = error.title;
+      }
+    });
+    return ret;
+  }
+
   _setMessageFromHttpError() {
     if (this.httpError && this.httpError.response && this.httpError.response.status) {
       switch (this.httpError.response.status) {

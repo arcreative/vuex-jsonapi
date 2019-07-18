@@ -30,10 +30,10 @@ class Record {
    * @param data
    * @returns {Record}
    */
-  materialize(data = { id, type, attributes: {}, relationships: {}, meta: {} }) {
+  materialize(data = { id: null, type: null, attributes: {}, relationships: {}, meta: {} }) {
     this._persisted = true;
-    this.id = data.id;
-    this.type = data.type;
+    this.id = data.id || this.id;
+    this.type = data.type || this.id;
     this._data.attributes = extend(this._data.attributes, data.attributes);
     this._data.relationships = extend(this._data.relationships, data.relationships);
     this._data.meta = extend(this._data.meta, data.meta);

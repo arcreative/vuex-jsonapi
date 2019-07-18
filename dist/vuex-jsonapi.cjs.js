@@ -4331,15 +4331,15 @@ class Record {
 
 
   materialize(data = {
-    id,
-    type,
+    id: null,
+    type: null,
     attributes: {},
     relationships: {},
     meta: {}
   }) {
     this._persisted = true;
-    this.id = data.id;
-    this.type = data.type;
+    this.id = data.id || this.id;
+    this.type = data.type || this.id;
     this._data.attributes = assignIn(this._data.attributes, data.attributes);
     this._data.relationships = assignIn(this._data.relationships, data.relationships);
     this._data.meta = assignIn(this._data.meta, data.meta);

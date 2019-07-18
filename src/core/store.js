@@ -134,9 +134,8 @@ class Store {
     extend(record, record._data.attributes);
     forEach(record._data.relationships, (item, name) => {
       let data = item.data;
-      if (!data) {
-        this.Vue.set(record, name, null);
-      } else if (data.length) {
+      if (!data) return;
+      if (data instanceof Array) {
         this.Vue.set(record, name, data.map(item => {
           return this.getRecord(item.type, item.id);
         }));

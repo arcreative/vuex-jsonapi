@@ -2282,12 +2282,14 @@
      *
      * @param method
      * @param url
-     * @param data
+     * @param options
      * @returns {Promise<*>}
      */
 
 
-    request(method, url, data = null) {
+    request(method, url, {
+      data
+    }) {
       return this.http({
         method: method.toLowerCase(),
         url,
@@ -2299,12 +2301,13 @@
      *
      * @param method
      * @param url
+     * @param options
      * @returns {Promise<Record|Record[]>}
      */
 
 
-    requestRecords(method, url) {
-      return this.request(method, url).then(this.store.materializeRecords.bind(this.store));
+    requestRecords(method, url, options = {}) {
+      return this.request(method, url, options).then(this.store.materializeRecords.bind(this.store));
     }
     /**
      * Wrapped get request
@@ -4491,12 +4494,20 @@
       // main records
       if (data && data.data && data.data.included) {
         this.materializeRecords(data.data.included);
+      } // Capture the meta
+
+
+      let meta = null;
+
+      if (data && data.data && data.data.meta) {
+        meta = data.data.meta;
       } // If HTTP response, set data to response's data element
 
 
       if (data && data.data && data.data.data) {
         data = data.data.data;
-      }
+      } // Coerce response into array for iteration
+
 
       let single = false;
       let ret = [];
@@ -4504,15 +4515,24 @@
       if (!(data instanceof Array)) {
         single = true;
         data = [data];
-      }
+      } // Persist, materialize, hydrate
+
 
       forEach(data, item => {
         let record = this.getRecord(item.type, item.id);
         record.materialize(item);
         this.hydrateRecord(record);
         ret.push(record);
-      });
-      return single ? ret[0] : ret;
+      }); // Transform back to response data format
+
+      ret = single ? ret[0] : ret; // Append the meta (if applicable)
+
+      if (meta) {
+        ret.meta = meta;
+      } // Send it on
+
+
+      return ret;
     }
     /**
      * Serializes record into server-friendly body
@@ -4531,7 +4551,7 @@
       };
 
       for (var key in record) {
-        if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type'].indexOf(key) === -1) {
+        if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
           var prop = record[key];
 
           if (prop instanceof Record) {
@@ -4575,15 +4595,13 @@
       assignIn(record, record._data.attributes);
       forEach(record._data.relationships, (item, name) => {
         let data = item.data;
+        if (!data) return;
 
-        if (!data) {
-          this.Vue.set(record, name, null);
-        } else if (data.length) {
+        if (data instanceof Array) {
           this.Vue.set(record, name, data.map(item => {
             return this.getRecord(item.type, item.id);
           }));
         } else {
-          if (!data.type || !data.id) return;
           this.Vue.set(record, name, this.getRecord(data.type, data.id));
         }
       });
@@ -4846,6 +4864,16 @@
       return get(this, 'httpError.response.data.errors') || [];
     }
 
+    attributeErrors() {
+      let ret = {};
+      this.errors().map(error => {
+        if (error && error.code === '100') {
+          ret[error.source.pointer.split('/').pop()] = error.title;
+        }
+      });
+      return ret;
+    }
+
     _setMessageFromHttpError() {
       if (this.httpError && this.httpError.response && this.httpError.response.status) {
         switch (this.httpError.response.status) {
@@ -4874,7 +4902,8 @@
   var actions = (apiClient => {
     return {
       find({
-        commit
+        commit,
+        state
       }, {
         channel,
         type,
@@ -4885,13 +4914,21 @@
         params = omit(params, param => {
           return param === null || param === undefined;
         });
+        commit('updateError', {
+          channel,
+          value: null
+        });
         commit('updateLoading', {
           channel,
           value: true
         });
-        commit('updateError', {
+        commit('updateMeta', {
           channel,
-          value: null
+          value: get(state, 'meta.' + channel) || {}
+        });
+        commit('updateMoreRecords', {
+          channel,
+          value: false
         });
         commit('updateNoRecords', {
           channel,
@@ -4900,7 +4937,15 @@
         apiClient.find(type, id, params).then(records => {
           commit('updateChannel', {
             channel,
-            records
+            value: records
+          });
+          commit('updateMeta', {
+            channel,
+            value: records.meta || {}
+          });
+          commit('updateMoreRecords', {
+            channel,
+            value: get(records, 'meta.record_count') > records.length
           });
           commit('updateNoRecords', {
             channel,
@@ -5011,15 +5056,21 @@
       };
     },
 
-    errors(state) {
-      return channel => {
-        return state.errors[channel];
-      };
-    },
-
     loading(state) {
       return channel => {
         return state.loading[channel];
+      };
+    },
+
+    meta(state) {
+      return channel => {
+        return state.meta[channel];
+      };
+    },
+
+    moreRecords(state) {
+      return channel => {
+        return state.moreRecords[channel];
       };
     },
 
@@ -5034,9 +5085,9 @@
   var mutations = {
     updateChannel(state, {
       channel,
-      records
+      value
     }) {
-      this._vm.$set(state.channels, channel, records);
+      this._vm.$set(state.channels, channel, value);
     },
 
     updateError(state, {
@@ -5053,6 +5104,20 @@
       this._vm.$set(state.loading, channel, value);
     },
 
+    updateMeta(state, {
+      channel,
+      value
+    }) {
+      this._vm.$set(state.meta, channel, value);
+    },
+
+    updateMoreRecords(state, {
+      channel,
+      value
+    }) {
+      this._vm.$set(state.moreRecords, channel, value);
+    },
+
     updateNoRecords(state, {
       channel,
       value
@@ -5065,9 +5130,10 @@
   var state = {
     models: {},
     channels: {},
-    loading: {},
     error: {},
-    errors: {},
+    loading: {},
+    meta: {},
+    moreRecords: {},
     noRecords: {}
   };
 
@@ -5077,12 +5143,20 @@
         return this.$store.getters.channel(channel);
       },
 
+      [name ? name + 'Error' : 'error']() {
+        return this.$store.getters.error(channel);
+      },
+
       [name ? name + 'Loading' : 'loading']() {
         return this.$store.getters.loading(channel);
       },
 
-      [name ? name + 'Error' : 'error']() {
-        return this.$store.getters.error(channel);
+      [name ? name + 'Meta' : 'meta']() {
+        return this.$store.getters.meta(channel);
+      },
+
+      [name ? name + 'MoreRecords' : 'moreRecords']() {
+        return this.$store.getters.moreRecords(channel);
       },
 
       [name ? name + 'NoRecords' : 'noRecords']() {

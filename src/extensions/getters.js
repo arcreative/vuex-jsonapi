@@ -9,14 +9,19 @@ export default {
       return state.error[channel];
     };
   },
-  errors (state) {
-    return channel => {
-      return state.errors[channel];
-    };
-  },
   loading (state) {
     return channel => {
       return state.loading[channel];
+    };
+  },
+  meta (state) {
+    return channel => {
+      return state.meta[channel];
+    };
+  },
+  moreRecords (state) {
+    return channel => {
+      return state.moreRecords[channel];
     };
   },
   noRecords (state) {

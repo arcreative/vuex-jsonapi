@@ -51,23 +51,44 @@ class Store {
     if (data && data.data && data.data.included) {
       this.materializeRecords(data.data.included);
     }
+
+    // Capture the meta
+    let meta = null;
+    if (data && data.data && data.data.meta) {
+      meta = data.data.meta;
+    }
+
     // If HTTP response, set data to response's data element
     if (data && data.data && data.data.data) {
       data = data.data.data;
     }
+
+    // Coerce response into array for iteration
     let single = false;
     let ret = [];
     if (!(data instanceof Array)) {
       single = true;
       data = [data];
     }
+
+    // Persist, materialize, hydrate
     forEach(data, item => {
       let record = this.getRecord(item.type, item.id);
       record.materialize(item);
       this.hydrateRecord(record);
       ret.push(record);
     });
-    return single ? ret[0] : ret;
+
+    // Transform back to response data format
+    ret = single ? ret[0] : ret;
+
+    // Append the meta (if applicable)
+    if (meta) {
+      ret.meta = meta;
+    }
+
+    // Send it on
+    return ret;
   }
 
   /**
@@ -85,7 +106,7 @@ class Store {
     };
 
     for (var key in record) {
-      if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type'].indexOf(key) === -1) {
+      if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
         var prop = record[key];
         if (prop instanceof Record) {
           body.relationships[key] = { data: { type: prop.type, id: prop.id } };
@@ -120,7 +141,6 @@ class Store {
           return this.getRecord(item.type, item.id);
         }));
       } else {
-        if (!data.type || !data.id) return;
         this.Vue.set(record, name, this.getRecord(data.type, data.id));
       }
     });

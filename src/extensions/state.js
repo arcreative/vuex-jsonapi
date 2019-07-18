@@ -1,8 +1,10 @@
 export default {
   models: {},
+
   channels: {},
-  loading: {},
   error: {},
-  errors: {},
+  loading: {},
+  meta: {},
+  moreRecords: {},
   noRecords: {},
 }

@@ -1,20 +1,25 @@
+import get from 'lodash-es/get'
 import omit from 'lodash-es/omit'
 
 import RequestError from '../support/request-error'
 
 export default (apiClient) => {
   return {
-    find({ commit }, { channel, type, id, params, suppress = false }) {
+    find({ commit, state }, { channel, type, id, params, suppress = false }) {
       params = omit(params, (param) => {
         return param === null || param === undefined;
       });
-      commit('updateLoading', { channel, value: true });
       commit('updateError', { channel, value: null });
+      commit('updateLoading', { channel, value: true });
+      commit('updateMeta', { channel, value: get(state, 'meta.' + channel) || {} });
+      commit('updateMoreRecords', { channel, value: false });
       commit('updateNoRecords', { channel, value: false });
       apiClient
         .find(type, id, params)
         .then(records => {
-          commit('updateChannel', { channel, records });
+          commit('updateChannel', { channel, value: records });
+          commit('updateMeta', { channel, value: records.meta || {} });
+          commit('updateMoreRecords', { channel, value: get(records, 'meta.record_count') > records.length });
           commit('updateNoRecords', { channel, value: records.length === 0 });
         })
         .catch(error => {

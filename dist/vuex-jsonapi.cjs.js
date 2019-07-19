@@ -5036,6 +5036,38 @@ var actions = (apiClient => {
           suppress: suppress || suppressError
         }));
       });
+    },
+
+    clear({
+      commit,
+      state
+    }, {
+      channel
+    }) {
+      commit('updateChannel', {
+        channel,
+        value: null
+      });
+      commit('updateError', {
+        channel,
+        value: null
+      });
+      commit('updateLoading', {
+        channel,
+        value: null
+      });
+      commit('updateMeta', {
+        channel,
+        value: {}
+      });
+      commit('updateMoreRecords', {
+        channel,
+        value: null
+      });
+      commit('updateNoRecords', {
+        channel,
+        value: null
+      });
     }
 
   };

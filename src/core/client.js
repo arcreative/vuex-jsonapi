@@ -18,11 +18,12 @@ class Client {
    * @param options
    * @returns {Promise<*>}
    */
-  request(method, url, { data }) {
+  request(method, url, { data, params }) {
     return this.http({
       method: method.toLowerCase(),
       url,
       data,
+      params,
     });
   }
 

@@ -29,7 +29,7 @@ export default {
       apiClient,
       state: stateClone,
       mutations,
-      actions: actions(apiClient),
+      actions: actions(apiClient, store),
       getters
     }
   }

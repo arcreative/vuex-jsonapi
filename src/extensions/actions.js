@@ -3,7 +3,7 @@ import omit from 'lodash-es/omit'
 
 import RequestError from '../support/request-error'
 
-export default (apiClient) => {
+export default (apiClient, store) => {
   return {
     find({ commit, state }, { channel, type, id, params, suppress = false }) {
       params = omit(params, (param) => {
@@ -73,5 +73,9 @@ export default (apiClient) => {
       commit('updateMoreRecords', { channel, value: null });
       commit('updateNoRecords', { channel, value: null });
     },
+    materialize({ dispatch, commit }, { records, channel }) {
+      dispatch('clear', { channel });
+      commit('updateChannel', { channel, value: store.materializeRecords(records) });
+    }
   };
 }

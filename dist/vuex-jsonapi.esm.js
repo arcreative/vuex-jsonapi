@@ -2282,12 +2282,14 @@ class Client {
 
 
   request(method, url, {
-    data
+    data,
+    params
   }) {
     return this.http({
       method: method.toLowerCase(),
       url,
-      data
+      data,
+      params
     });
   }
   /**
@@ -4893,7 +4895,7 @@ class RequestError extends Error {
 
 }
 
-var actions = (apiClient => {
+var actions = ((apiClient, store) => {
   return {
     find({
       commit,
@@ -5064,6 +5066,22 @@ var actions = (apiClient => {
         channel,
         value: null
       });
+    },
+
+    materialize({
+      dispatch,
+      commit
+    }, {
+      records,
+      channel
+    }) {
+      dispatch('clear', {
+        channel
+      });
+      commit('updateChannel', {
+        channel,
+        value: store.materializeRecords(records)
+      });
     }
 
   };
@@ -5207,7 +5225,7 @@ var index_esm = {
       apiClient,
       state: stateClone,
       mutations,
-      actions: actions(apiClient),
+      actions: actions(apiClient, store),
       getters
     };
   }

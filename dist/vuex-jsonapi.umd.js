@@ -2288,12 +2288,14 @@
 
 
     request(method, url, {
-      data
+      data,
+      params
     }) {
       return this.http({
         method: method.toLowerCase(),
         url,
-        data
+        data,
+        params
       });
     }
     /**
@@ -4899,7 +4901,7 @@
 
   }
 
-  var actions = (apiClient => {
+  var actions = ((apiClient, store) => {
     return {
       find({
         commit,
@@ -5070,6 +5072,22 @@
           channel,
           value: null
         });
+      },
+
+      materialize({
+        dispatch,
+        commit
+      }, {
+        records,
+        channel
+      }) {
+        dispatch('clear', {
+          channel
+        });
+        commit('updateChannel', {
+          channel,
+          value: store.materializeRecords(records)
+        });
       }
 
     };
@@ -5213,7 +5231,7 @@
         apiClient,
         state: stateClone,
         mutations,
-        actions: actions(apiClient),
+        actions: actions(apiClient, store),
         getters
       };
     }

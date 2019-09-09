@@ -16,11 +16,11 @@ export default (apiClient, store) => {
       commit('updateNoRecords', { channel, value: false });
       apiClient
         .find(type, id, params)
-        .then(records => {
-          commit('updateChannel', { channel, value: records });
-          commit('updateMeta', { channel, value: records.meta || {} });
-          commit('updateMoreRecords', { channel, value: get(records, 'meta.record_count') > records.length });
-          commit('updateNoRecords', { channel, value: records.length === 0 });
+        .then(({ data, meta }) => {
+          commit('updateChannel', { channel, value: data });
+          commit('updateMeta', { channel, value: meta });
+          commit('updateMoreRecords', { channel, value: meta.record_count > data.length });
+          commit('updateNoRecords', { channel, value: data.length === 0 });
         })
         .catch(error => {
           let requestError = new RequestError(error, { suppress });
@@ -35,7 +35,9 @@ export default (apiClient, store) => {
       let persisted = record._persisted;
       apiClient
         .save(record, { params })
-        .then(record => {
+        .then(({ data }) => {
+          let record = data;
+
           // Notify of save/create/update
           this._vm.$emit('didSaveRecord', { record, suppress: suppress || suppressSuccess });
           this._vm.$emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', { record, suppress: suppress || suppressSuccess });
@@ -75,7 +77,7 @@ export default (apiClient, store) => {
     },
     materialize({ dispatch, commit }, { records, channel }) {
       dispatch('clear', { channel });
-      commit('updateChannel', { channel, value: store.materializeRecords(records) });
+      commit('updateChannel', { channel, value: store.materializeRecords(records).data });
     }
   };
 }

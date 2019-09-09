@@ -4481,19 +4481,22 @@ class Store {
    * Materializes and returns records from an HTTP response body
    *
    * @param data
-   * @returns {Record|Record[]}
+   * @returns {{data: Array, response: *, meta, included: Array}}
    */
 
 
   materializeRecords(data) {
-    // If HTTP response and included is found, materialize all included records first so they're available to the
+    let response = data; // If HTTP response and included is found, materialize all included records first so they're available to the
     // main records
+
+    let included = [];
+
     if (data && data.data && data.data.included) {
-      this.materializeRecords(data.data.included);
+      included = this.materializeRecords(data.data.included).data;
     } // Capture the meta
 
 
-    let meta = null;
+    let meta = {};
 
     if (data && data.data && data.data.meta) {
       meta = data.data.meta;
@@ -4521,14 +4524,14 @@ class Store {
       ret.push(record);
     }); // Transform back to response data format
 
-    ret = single ? ret[0] : ret; // Append the meta (if applicable)
+    ret = single ? ret[0] : ret; // Send it on
 
-    if (meta) {
-      ret.meta = meta;
-    } // Send it on
-
-
-    return ret;
+    return {
+      response,
+      data: ret,
+      included,
+      meta
+    };
   }
   /**
    * Serializes record into server-friendly body
@@ -4930,22 +4933,25 @@ var actions = ((apiClient, store) => {
         channel,
         value: false
       });
-      apiClient.find(type, id, params).then(records => {
+      apiClient.find(type, id, params).then(({
+        data,
+        meta
+      }) => {
         commit('updateChannel', {
           channel,
-          value: records
+          value: data
         });
         commit('updateMeta', {
           channel,
-          value: records.meta || {}
+          value: meta
         });
         commit('updateMoreRecords', {
           channel,
-          value: get(records, 'meta.record_count') > records.length
+          value: meta.record_count > data.length
         });
         commit('updateNoRecords', {
           channel,
-          value: records.length === 0
+          value: data.length === 0
         });
       }).catch(error => {
         let requestError = new RequestError(error, {
@@ -4977,8 +4983,11 @@ var actions = ((apiClient, store) => {
       let persisted = record._persisted;
       apiClient.save(record, {
         params
-      }).then(record => {
-        // Notify of save/create/update
+      }).then(({
+        data
+      }) => {
+        let record = data; // Notify of save/create/update
+
         this._vm.$emit('didSaveRecord', {
           record,
           suppress: suppress || suppressSuccess
@@ -5080,7 +5089,7 @@ var actions = ((apiClient, store) => {
       });
       commit('updateChannel', {
         channel,
-        value: store.materializeRecords(records)
+        value: store.materializeRecords(records).data
       });
     }
 
@@ -5211,7 +5220,7 @@ var mapChannel = ((channel, name = null) => {
 });
 
 var index_esm = {
-  version: '0.1.0',
+  version: '0.2.0',
   Client,
   Record,
   Store,

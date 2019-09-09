@@ -43,17 +43,20 @@ class Store {
    * Materializes and returns records from an HTTP response body
    *
    * @param data
-   * @returns {Record|Record[]}
+   * @returns {{data: Array, response: *, meta, included: Array}}
    */
   materializeRecords(data) {
+    let response = data;
+
     // If HTTP response and included is found, materialize all included records first so they're available to the
     // main records
+    let included = [];
     if (data && data.data && data.data.included) {
-      this.materializeRecords(data.data.included);
+      included = this.materializeRecords(data.data.included).data;
     }
 
     // Capture the meta
-    let meta = null;
+    let meta = {};
     if (data && data.data && data.data.meta) {
       meta = data.data.meta;
     }
@@ -82,13 +85,13 @@ class Store {
     // Transform back to response data format
     ret = single ? ret[0] : ret;
 
-    // Append the meta (if applicable)
-    if (meta) {
-      ret.meta = meta;
-    }
-
     // Send it on
-    return ret;
+    return {
+      response,
+      data: ret,
+      included,
+      meta,
+    };
   }
 
   /**

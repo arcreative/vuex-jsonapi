@@ -5241,7 +5241,7 @@
   });
 
   var index_esm = {
-    version: '0.3.0',
+    version: '0.4.0',
     Client,
     Record,
     Store,

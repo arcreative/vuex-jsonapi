@@ -4838,17 +4838,15 @@ const UNKNOWN_ERROR = 'An error occurred with your request, please try again mom
 class RequestError extends Error {
   constructor(httpError, {
     record,
-    suppress = false
+    customMessage = null
   }) {
     super();
-    this.httpError = httpError;
-
-    this._setMessageFromHttpError();
-
     Object.assign(this, {
       record,
-      suppress
+      customMessage,
+      httpError
     });
+    this.message = customMessage || this._getMessageFromHttpError();
   }
 
   request() {
@@ -4877,27 +4875,30 @@ class RequestError extends Error {
     return ret;
   }
 
-  _setMessageFromHttpError() {
+  _getMessageFromHttpError() {
     if (this.httpError && this.httpError.response && this.httpError.response.status) {
       switch (this.httpError.response.status) {
         case 400:
-          return this.message = 'An error occurred with your request, please contact support with more information';
+          return 'An error occurred with your request, please contact support with more information';
+
+        case 401:
+          return 'Please log in to continue';
 
         case 403:
-          return this.message = 'You don\'t have permission to perform that action';
+          return 'You don\'t have permission to perform that action';
 
         case 404:
-          return this.message = 'That record cannot be found';
+          return 'That record cannot be found';
 
         case 422:
-          return this.message = 'Error saving record';
+          return 'Error saving record';
 
         default:
-          return this.message = UNKNOWN_ERROR;
+          return UNKNOWN_ERROR;
       }
     }
 
-    return this.message = UNKNOWN_ERROR;
+    return UNKNOWN_ERROR;
   }
 
 }
@@ -4912,7 +4913,7 @@ var actions = ((apiClient, store) => {
       type,
       id,
       params,
-      suppress = false
+      errorMessage = true
     }) {
       params = omit(params, param => {
         return param === null || param === undefined;
@@ -4958,15 +4959,19 @@ var actions = ((apiClient, store) => {
           value: data.length === 0
         });
       }).catch(error => {
-        let requestError = new RequestError(error, {
-          suppress
+        let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
+        let wrappedError = new RequestError(error, {
+          customMessage
         });
         commit('updateError', {
           channel,
-          value: requestError
+          value: wrappedError
         });
 
-        this._vm.$emit('didFindError', requestError);
+        this._vm.$emit('didFindError', {
+          error: wrappedError,
+          errorMessage
+        });
       }).finally(() => {
         commit('updateLoading', {
           channel,
@@ -4980,9 +4985,8 @@ var actions = ((apiClient, store) => {
     }, {
       record,
       params = {},
-      suppress = false,
-      suppressSuccess = false,
-      suppressError = false
+      successMessage = true,
+      errorMessage = true
     }) {
       let persisted = record._persisted;
       apiClient.save(record, {
@@ -4994,12 +4998,12 @@ var actions = ((apiClient, store) => {
 
         this._vm.$emit('didSaveRecord', {
           record,
-          suppress: suppress || suppressSuccess
+          successMessage
         });
 
         this._vm.$emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', {
           record,
-          suppress: suppress || suppressSuccess
+          successMessage
         }); // Notify that one or more records of this type changed
 
 
@@ -5011,10 +5015,16 @@ var actions = ((apiClient, store) => {
           record
         });
       }, error => {
-        this._vm.$emit('didSaveError', new RequestError(error, {
+        let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
+        let wrappedError = new RequestError(error, {
           record,
-          suppress: suppress || suppressError
-        }));
+          customMessage
+        });
+
+        this._vm.$emit('didSaveError', {
+          error: wrappedError,
+          errorMessage
+        });
       });
     },
 
@@ -5022,15 +5032,14 @@ var actions = ((apiClient, store) => {
       commit
     }, {
       record,
-      suppress = false,
-      suppressSuccess = false,
-      suppressError = false
+      successMessage = true,
+      errorMessage = true
     }) {
       apiClient.delete(record).then(() => {
         // Notify of save/create/update
         this._vm.$emit('didDeleteRecord', {
           record,
-          suppress: suppress || suppressSuccess
+          successMessage
         }); // Notify that one or more records of this type changed
 
 
@@ -5042,10 +5051,16 @@ var actions = ((apiClient, store) => {
           record
         });
       }, error => {
-        this._vm.$emit('didDeleteError', new RequestError(error, {
+        let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
+        let wrappedError = new RequestError(error, {
           record,
-          suppress: suppress || suppressError
-        }));
+          customMessage
+        });
+
+        this._vm.$emit('didDeleteError', {
+          error: wrappedError,
+          errorMessage
+        });
       });
     },
 
@@ -5224,7 +5239,7 @@ var mapChannel = ((channel, name = null) => {
 });
 
 var index_esm = {
-  version: '0.2.0',
+  version: '0.3.0',
   Client,
   Record,
   Store,

@@ -5,7 +5,7 @@ import RequestError from '../support/request-error'
 
 export default (apiClient, store) => {
   return {
-    find({ commit, state }, { channel, type, id, params, suppress = false }) {
+    find({ commit, state }, { channel, type, id, params, errorMessage = true }) {
       params = omit(params, (param) => {
         return param === null || param === undefined;
       });
@@ -23,15 +23,16 @@ export default (apiClient, store) => {
           commit('updateNoRecords', { channel, value: data.length === 0 });
         })
         .catch(error => {
-          let requestError = new RequestError(error, { suppress });
-          commit('updateError', { channel, value: requestError });
-          this._vm.$emit('didFindError', requestError);
+          let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
+          let wrappedError = new RequestError(error, { customMessage });
+          commit('updateError', { channel, value: wrappedError });
+          this._vm.$emit('didFindError', { error: wrappedError, errorMessage });
         })
         .finally(() => {
           commit('updateLoading', { channel, value: false });
         })
     },
-    save({ commit }, { record, params = {}, suppress = false, suppressSuccess = false, suppressError = false }) {
+    save({ commit }, { record, params = {}, successMessage = true, errorMessage = true }) {
       let persisted = record._persisted;
       apiClient
         .save(record, { params })
@@ -39,8 +40,8 @@ export default (apiClient, store) => {
           let record = data;
 
           // Notify of save/create/update
-          this._vm.$emit('didSaveRecord', { record, suppress: suppress || suppressSuccess });
-          this._vm.$emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', { record, suppress: suppress || suppressSuccess });
+          this._vm.$emit('didSaveRecord', { record, successMessage });
+          this._vm.$emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', { record, successMessage });
 
           // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
@@ -48,15 +49,17 @@ export default (apiClient, store) => {
           }).join('');
           this._vm.$emit('didUpdate' + type, { record });
         }, error => {
-          this._vm.$emit('didSaveError', new RequestError(error, { record, suppress: suppress || suppressError }));
+          let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
+          let wrappedError = new RequestError(error, { record, customMessage });
+          this._vm.$emit('didSaveError', { error: wrappedError, errorMessage });
         });
     },
-    delete({ commit }, { record, suppress = false, suppressSuccess = false, suppressError = false }) {
+    delete({ commit }, { record, successMessage = true, errorMessage = true }) {
       apiClient
         .delete(record)
         .then(() => {
           // Notify of save/create/update
-          this._vm.$emit('didDeleteRecord', { record, suppress: suppress || suppressSuccess });
+          this._vm.$emit('didDeleteRecord', { record, successMessage });
 
           // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
@@ -64,7 +67,9 @@ export default (apiClient, store) => {
           }).join('');
           this._vm.$emit('didUpdate' + type, { record });
         }, error => {
-          this._vm.$emit('didDeleteError', new RequestError(error, { record, suppress: suppress || suppressError }));
+          let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
+          let wrappedError = new RequestError(error, { record, customMessage });
+          this._vm.$emit('didDeleteError', { error: wrappedError, errorMessage });
         });
     },
     clear({ commit, state }, { channel }) {

@@ -4,11 +4,10 @@ const UNKNOWN_ERROR = 'An error occurred with your request, please try again mom
 
 export default class RequestError extends Error {
 
-  constructor(httpError, { record, suppress = false }) {
+  constructor(httpError, { record, customMessage = null }) {
     super();
-    this.httpError = httpError;
-    this._setMessageFromHttpError();
-    Object.assign(this, { record, suppress });
+    Object.assign(this, { record, customMessage, httpError });
+    this.message = customMessage || this._getMessageFromHttpError();
   }
 
   request() {
@@ -37,16 +36,17 @@ export default class RequestError extends Error {
     return ret;
   }
 
-  _setMessageFromHttpError() {
+  _getMessageFromHttpError() {
     if (this.httpError && this.httpError.response && this.httpError.response.status) {
       switch (this.httpError.response.status) {
-        case 400: return this.message = 'An error occurred with your request, please contact support with more information';
-        case 403: return this.message = 'You don\'t have permission to perform that action';
-        case 404: return this.message = 'That record cannot be found';
-        case 422: return this.message = 'Error saving record';
-        default: return this.message = UNKNOWN_ERROR;
+        case 400: return 'An error occurred with your request, please contact support with more information';
+        case 401: return 'Please log in to continue';
+        case 403: return 'You don\'t have permission to perform that action';
+        case 404: return 'That record cannot be found';
+        case 422: return 'Error saving record';
+        default: return UNKNOWN_ERROR;
       }
     }
-    return this.message = UNKNOWN_ERROR;
+    return UNKNOWN_ERROR;
   }
 }

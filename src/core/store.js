@@ -2,6 +2,7 @@ import extend from 'lodash-es/extend'
 import forEach from 'lodash-es/forEach'
 
 import Record from './record'
+import EventBus from './event-bus'
 
 class Store {
   /**
@@ -10,6 +11,7 @@ class Store {
   constructor(Vue, state) {
     this.Vue = Vue;
     this.data = state;
+    this.eventBus = new EventBus();
   }
 
   /**
@@ -146,6 +148,36 @@ class Store {
         this.Vue.set(record, name, this.getRecord(data.type, data.id));
       }
     });
+  }
+
+  /**
+   * Registers an event handler for a particular event type
+   *
+   * @param event Event name
+   * @param handler Event handler
+   */
+  $on(event, handler) {
+    this.eventBus.on(event, handler);
+  }
+
+  /**
+   * Deregisters an event handler for a particular event type
+   *
+   * @param event Event name
+   * @param handler Event handler
+   */
+  $off(event, handler) {
+    this.eventBus.off(event, handler);
+  }
+
+  /**
+   * Emits an event
+   *
+   * @param event Event name
+   * @param context Data/context to be passed with event
+   */
+  $emit(event, context) {
+    this.eventBus.emit(event, context);
   }
 }
 

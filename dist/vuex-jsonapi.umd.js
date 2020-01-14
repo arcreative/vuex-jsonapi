@@ -2373,6 +2373,42 @@
 
   }
 
+  class EventBus {
+    constructor() {
+      this.handlers = {};
+    }
+
+    on(event, handler) {
+      this.handlers[event] = this.handlers[event] || [];
+      this.handlers[event].push(handler);
+    }
+
+    off(event, handler) {
+      if (this.handlers[event]) {
+        let index = this.handlers[event].indexOf(handler);
+
+        if (index > -1) {
+          this.handlers[event].splice(index, 1);
+        }
+      }
+    }
+
+    emit(event, context = {}) {
+      if (this.handlers[event]) {
+        for (let i = 0; i < this.handlers[event].length; i++) {
+          this.handlers[event][i](context);
+        }
+      }
+    }
+
+    extendTo(store) {
+      store.$on = this.on.bind(this);
+      store.$off = this.off.bind(this);
+      store.$emit = this.emit.bind(this);
+    }
+
+  }
+
   /**
    * This method returns the first argument it receives.
    *
@@ -4453,6 +4489,7 @@
     constructor(Vue, state) {
       this.Vue = Vue;
       this.data = state;
+      this.eventBus = new EventBus();
     }
     /**
      * Gets a record, instantiating in store if needed
@@ -4610,6 +4647,39 @@
           this.Vue.set(record, name, this.getRecord(data.type, data.id));
         }
       });
+    }
+    /**
+     * Registers an event handler for a particular event type
+     *
+     * @param event Event name
+     * @param handler Event handler
+     */
+
+
+    $on(event, handler) {
+      this.eventBus.on(event, handler);
+    }
+    /**
+     * Deregisters an event handler for a particular event type
+     *
+     * @param event Event name
+     * @param handler Event handler
+     */
+
+
+    $off(event, handler) {
+      this.eventBus.off(event, handler);
+    }
+    /**
+     * Emits an event
+     *
+     * @param event Event name
+     * @param context Data/context to be passed with event
+     */
+
+
+    $emit(event, context) {
+      this.eventBus.emit(event, context);
     }
 
   }
@@ -4905,7 +4975,7 @@
 
   }
 
-  var actions = ((apiClient, store) => {
+  var actions = ((apiClient, store, eventBus) => {
     return {
       find({
         commit,
@@ -4969,8 +5039,7 @@
             channel,
             value: wrappedError
           });
-
-          this._vm.$emit('didFindError', {
+          eventBus.emit('didFindError', {
             error: wrappedError,
             errorMessage
           });
@@ -4998,22 +5067,19 @@
         }) => {
           let record = data; // Notify of save/create/update
 
-          this._vm.$emit('didSaveRecord', {
+          eventBus.emit('didSaveRecord', {
             record,
             successMessage
           });
-
-          this._vm.$emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', {
+          eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', {
             record,
             successMessage
           }); // Notify that one or more records of this type changed
 
-
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
-
-          this._vm.$emit('didUpdate' + type, {
+          eventBus.emit('didUpdate' + type, {
             record
           });
         }, error => {
@@ -5022,8 +5088,7 @@
             record,
             customMessage
           });
-
-          this._vm.$emit('didSaveError', {
+          eventBus.emit('didSaveError', {
             error: wrappedError,
             errorMessage
           });
@@ -5039,17 +5104,15 @@
       }) {
         apiClient.delete(record).then(() => {
           // Notify of save/create/update
-          this._vm.$emit('didDeleteRecord', {
+          eventBus.emit('didDeleteRecord', {
             record,
             successMessage
           }); // Notify that one or more records of this type changed
 
-
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
-
-          this._vm.$emit('didUpdate' + type, {
+          eventBus.emit('didUpdate' + type, {
             record
           });
         }, error => {
@@ -5058,8 +5121,7 @@
             record,
             customMessage
           });
-
-          this._vm.$emit('didDeleteError', {
+          eventBus.emit('didDeleteError', {
             error: wrappedError,
             errorMessage
           });
@@ -5251,12 +5313,14 @@
       let stateClone = cloneDeep(state);
       let store = new Store(Vue, state.models);
       let apiClient = new Client(store, axiosClient);
+      let eventBus = new EventBus();
       return {
         apiClient,
         state: stateClone,
         mutations,
-        actions: actions(apiClient, store),
-        getters
+        actions: actions(apiClient, store, eventBus),
+        getters,
+        eventBus
       };
     }
 

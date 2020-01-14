@@ -1,6 +1,7 @@
 import cloneDeep from 'lodash-es/cloneDeep'
 
 import Client from './core/client'
+import EventBus from './core/event-bus'
 import Record from './core/record'
 import Store from './core/store'
 
@@ -24,13 +25,15 @@ export default {
     let stateClone = cloneDeep(state);
     let store = new Store(Vue, state.models);
     let apiClient = new Client(store, axiosClient);
+    let eventBus = new EventBus();
 
     return {
       apiClient,
       state: stateClone,
       mutations,
-      actions: actions(apiClient, store),
-      getters
+      actions: actions(apiClient, store, eventBus),
+      getters,
+      eventBus,
     }
   }
 };

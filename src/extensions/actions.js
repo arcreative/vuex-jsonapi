@@ -3,7 +3,7 @@ import omit from 'lodash-es/omit'
 
 import RequestError from '../support/request-error'
 
-export default (apiClient, store) => {
+export default (apiClient, store, eventBus) => {
   return {
     find({ commit, state }, { channel, type, id, params, errorMessage = true }) {
       params = omit(params, (param) => {
@@ -26,7 +26,7 @@ export default (apiClient, store) => {
           let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
           let wrappedError = new RequestError(error, { customMessage });
           commit('updateError', { channel, value: wrappedError });
-          this._vm.$emit('didFindError', { error: wrappedError, errorMessage });
+          eventBus.emit('didFindError', { error: wrappedError, errorMessage });
         })
         .finally(() => {
           commit('updateLoading', { channel, value: false });
@@ -40,18 +40,18 @@ export default (apiClient, store) => {
           let record = data;
 
           // Notify of save/create/update
-          this._vm.$emit('didSaveRecord', { record, successMessage });
-          this._vm.$emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', { record, successMessage });
+          eventBus.emit('didSaveRecord', { record, successMessage });
+          eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', { record, successMessage });
 
           // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
-          this._vm.$emit('didUpdate' + type, { record });
+          eventBus.emit('didUpdate' + type, { record });
         }, error => {
           let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
           let wrappedError = new RequestError(error, { record, customMessage });
-          this._vm.$emit('didSaveError', { error: wrappedError, errorMessage });
+          eventBus.emit('didSaveError', { error: wrappedError, errorMessage });
         });
     },
     delete({ commit }, { record, successMessage = true, errorMessage = true }) {
@@ -59,17 +59,17 @@ export default (apiClient, store) => {
         .delete(record)
         .then(() => {
           // Notify of save/create/update
-          this._vm.$emit('didDeleteRecord', { record, successMessage });
+          eventBus.emit('didDeleteRecord', { record, successMessage });
 
           // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
-          this._vm.$emit('didUpdate' + type, { record });
+          eventBus.emit('didUpdate' + type, { record });
         }, error => {
           let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
           let wrappedError = new RequestError(error, { record, customMessage });
-          this._vm.$emit('didDeleteError', { error: wrappedError, errorMessage });
+          eventBus.emit('didDeleteError', { error: wrappedError, errorMessage });
         });
     },
     clear({ commit, state }, { channel }) {

@@ -2353,10 +2353,23 @@
      */
 
 
-    save(record, options = {}) {
+    save(record, options = {
+      materialize: true
+    }) {
       return this.http[record.id ? 'patch' : 'post']('/' + record.type + (record.id ? '/' + record.id : ''), this.store.serializeRecord(record), options).then(res => {
-        this.store.persist(record, res.data.data.id);
-        return this.store.materializeRecords.call(this.store, res);
+        this.store.persist(record, res.data.data.id); // Sometimes we don't want to materialize--for instance, if we're sending a preflight request and don't want to
+        // persist changes to the store
+
+        if (options.materialize) {
+          return this.store.materializeRecords.call(this.store, res);
+        } else {
+          return {
+            response: res,
+            data: record,
+            included: [],
+            meta: (res.data || {}).meta
+          };
+        }
       });
     }
     /**
@@ -5056,12 +5069,14 @@
       }, {
         record,
         params = {},
+        materialize = true,
         successMessage = true,
         errorMessage = true
       }) {
         let persisted = record._persisted;
         apiClient.save(record, {
-          params
+          params,
+          materialize
         }).then(({
           data
         }) => {

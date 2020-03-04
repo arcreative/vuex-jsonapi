@@ -32,10 +32,10 @@ export default (apiClient, store, eventBus) => {
           commit('updateLoading', { channel, value: false });
         })
     },
-    save({ commit }, { record, params = {}, successMessage = true, errorMessage = true }) {
+    save({ commit }, { record, params = {}, materialize = true, successMessage = true, errorMessage = true }) {
       let persisted = record._persisted;
       apiClient
-        .save(record, { params })
+        .save(record, { params, materialize })
         .then(({ data }) => {
           let record = data;
 

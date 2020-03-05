@@ -8,9 +8,9 @@ class Store {
   /**
    * Store/cache for API records
    */
-  constructor(Vue, state) {
+  constructor(Vue, models) {
     this.Vue = Vue;
-    this.data = state;
+    this.data = models;
     this.eventBus = new EventBus();
   }
 

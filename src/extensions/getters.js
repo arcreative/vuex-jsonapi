@@ -1,30 +1,30 @@
 export default {
-  channel (state) {
+  channel(state) {
     return channel => {
       return state.channels[channel];
     };
   },
-  error (state) {
+  error(state) {
     return channel => {
       return state.error[channel];
     };
   },
-  loading (state) {
+  loading(state) {
     return channel => {
       return state.loading[channel];
     };
   },
-  meta (state) {
+  meta(state) {
     return channel => {
       return state.meta[channel];
     };
   },
-  moreRecords (state) {
+  moreRecords(state) {
     return channel => {
       return state.moreRecords[channel];
     };
   },
-  noRecords (state) {
+  noRecords(state) {
     return channel => {
       return state.noRecords[channel];
     };

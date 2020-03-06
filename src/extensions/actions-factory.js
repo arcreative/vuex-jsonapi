@@ -1,6 +1,7 @@
 import get from 'lodash-es/get'
 import omit from 'lodash-es/omit'
 
+import Record from '../core/record'
 import RequestError from '../support/request-error'
 
 export default (apiClient, store, eventBus) => {
@@ -31,6 +32,32 @@ export default (apiClient, store, eventBus) => {
         .finally(() => {
           commit('updateLoading', { channel, value: false });
         })
+    },
+    findSparse({ commit, state, dispatch }, { type, ids, loadUnpersisted = true, loadAll = false, filterParam = 'filter[id]' }) {
+
+      // Track unpersisted IDs for sparse loading later
+      let unpersistedIds = [];
+
+      // Grab/instantiate all items from/to the store
+      let records = ids.map(id => {
+        if (state.models[type][id]) {
+          return state.models[type][id];
+        } else {
+          unpersistedIds.push(id);
+          return store.persist(new Record(type, { id }), id);
+        }
+      });
+
+      // Load records if loadAll is set, or if loadUnpersisted is set and one or more records are unpersisted
+      if (loadAll || loadUnpersisted && unpersistedIds.length > 0) {
+        let params = {};
+        params[filterParam] = loadAll ? ids.join(',') :unpersistedIds.join(',');
+
+        // Fire this into the void, it'll deserialize onto the old object...
+        dispatch('find', { type, params: params })
+      }
+
+      return records;
     },
     save({ commit }, { record, params = {}, materialize = true, successMessage = true, errorMessage = true }) {
       let persisted = record._persisted;

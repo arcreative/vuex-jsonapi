@@ -1,4 +1,9 @@
 export default {
+  itemsById(state) {
+    return (type, ids) => {
+      return ids.map(id => (state.models[type][id]));
+    }
+  },
   channel(state) {
     return channel => {
       return state.channels[channel];

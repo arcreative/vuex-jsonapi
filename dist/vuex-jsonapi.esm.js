@@ -4122,6 +4122,12 @@ var state = {
 };
 
 var getters = {
+  itemsById(state) {
+    return (type, ids) => {
+      return ids.map(id => state.models[type][id]);
+    };
+  },
+
   channel(state) {
     return channel => {
       return state.channels[channel];
@@ -5126,6 +5132,44 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       });
     },
 
+    findSparse({
+      commit,
+      state,
+      dispatch
+    }, {
+      type,
+      ids,
+      loadUnpersisted = true,
+      loadAll = false,
+      filterParam = 'filter[id]'
+    }) {
+      // Track unpersisted IDs for sparse loading later
+      let unpersistedIds = []; // Grab/instantiate all items from/to the store
+
+      let records = ids.map(id => {
+        if (state.models[type][id]) {
+          return state.models[type][id];
+        } else {
+          unpersistedIds.push(id);
+          return store.persist(new Record(type, {
+            id
+          }), id);
+        }
+      }); // Load records if loadAll is set, or if loadUnpersisted is set and one or more records are unpersisted
+
+      if (loadAll || loadUnpersisted && unpersistedIds.length > 0) {
+        let params = {};
+        params[filterParam] = loadAll ? ids.join(',') : unpersistedIds.join(','); // Fire this into the void, it'll deserialize onto the old object...
+
+        dispatch('find', {
+          type,
+          params: params
+        });
+      }
+
+      return records;
+    },
+
     save({
       commit
     }, {
@@ -5286,7 +5330,7 @@ var mapChannel = ((channel, name = null) => {
 });
 
 var index_esm = {
-  version: '0.6.0',
+  version: '0.7.0',
   Client,
   Record,
   Store,

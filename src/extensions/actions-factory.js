@@ -40,7 +40,7 @@ export default (apiClient, store, eventBus) => {
 
       // Grab/instantiate all items from/to the store
       let records = ids.map(id => {
-        if (state.models[type][id]) {
+        if (state.models[type] && state.models[type][id]) {
           return state.models[type][id];
         } else {
           unpersistedIds.push(id);

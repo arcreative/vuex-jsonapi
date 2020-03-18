@@ -2,7 +2,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
   (global = global || self, factory(global.VuexJsonapi = {}));
-}(this, function (exports) { 'use strict';
+}(this, (function (exports) { 'use strict';
 
   class Client {
     /**
@@ -5378,4 +5378,4 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));

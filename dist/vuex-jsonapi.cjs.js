@@ -5334,7 +5334,7 @@ var mapChannel = ((channel, name = null) => {
 });
 
 var index_esm = {
-  version: '0.7.1',
+  version: '0.7.2',
   Client,
   Record,
   Store,

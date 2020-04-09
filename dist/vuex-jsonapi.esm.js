@@ -5137,8 +5137,11 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       state,
       dispatch
     }, {
+      channel,
       type,
       ids,
+      params,
+      errorMessage = true,
       loadUnpersisted = true,
       loadAll = false,
       filterParam = 'filter[id]'
@@ -5158,10 +5161,10 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       }); // Load records if loadAll is set, or if loadUnpersisted is set and one or more records are unpersisted
 
       if (loadAll || loadUnpersisted && unpersistedIds.length > 0) {
-        let params = {};
         params[filterParam] = loadAll ? ids.join(',') : unpersistedIds.join(','); // Fire this into the void, it'll deserialize onto the old object...
 
         dispatch('find', {
+          channel,
           type,
           params: params
         });

@@ -86,7 +86,7 @@ export default (apiClient, store, eventBus) => {
         }, error => {
           let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
           let wrappedError = new RequestError(error, { record, customMessage });
-          eventBus.emit('didSaveError', { error: wrappedError, errorMessage });
+          eventBus.emit('didSaveError', { record, error: wrappedError, errorMessage });
         });
     },
     delete({ commit }, { record, successMessage = true, errorMessage = true }) {

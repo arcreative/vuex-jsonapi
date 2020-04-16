@@ -5219,6 +5219,7 @@
             customMessage
           });
           eventBus.emit('didSaveError', {
+            record,
             error: wrappedError,
             errorMessage
           });

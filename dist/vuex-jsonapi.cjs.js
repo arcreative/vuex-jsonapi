@@ -5217,6 +5217,7 @@ var actionsFactory = ((apiClient, store, eventBus) => {
           customMessage
         });
         eventBus.emit('didSaveError', {
+          record,
           error: wrappedError,
           errorMessage
         });

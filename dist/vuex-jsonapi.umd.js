@@ -5275,7 +5275,7 @@
         });
         commit('updateLoading', {
           channel,
-          value: null
+          value: false
         });
         commit('updateMeta', {
           channel,
@@ -5283,11 +5283,11 @@
         });
         commit('updateMoreRecords', {
           channel,
-          value: null
+          value: false
         });
         commit('updateNoRecords', {
           channel,
-          value: null
+          value: false
         });
       },
 
@@ -5340,7 +5340,7 @@
   });
 
   var index_esm = {
-    version: '0.7.4',
+    version: '0.7.5',
     Client,
     Record,
     Store,

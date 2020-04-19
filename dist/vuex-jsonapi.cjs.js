@@ -5273,7 +5273,7 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       });
       commit('updateLoading', {
         channel,
-        value: null
+        value: false
       });
       commit('updateMeta', {
         channel,
@@ -5281,11 +5281,11 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       });
       commit('updateMoreRecords', {
         channel,
-        value: null
+        value: false
       });
       commit('updateNoRecords', {
         channel,
-        value: null
+        value: false
       });
     },
 
@@ -5338,7 +5338,7 @@ var mapChannel = ((channel, name = null) => {
 });
 
 var index_esm = {
-  version: '0.7.4',
+  version: '0.7.5',
   Client,
   Record,
   Store,

@@ -110,10 +110,10 @@ export default (apiClient, store, eventBus) => {
     clear({ commit, state }, { channel }) {
       commit('updateChannel', { channel, value: null });
       commit('updateError', { channel, value: null });
-      commit('updateLoading', { channel, value: null });
+      commit('updateLoading', { channel, value: false });
       commit('updateMeta', { channel, value: {} });
-      commit('updateMoreRecords', { channel, value: null });
-      commit('updateNoRecords', { channel, value: null });
+      commit('updateMoreRecords', { channel, value: false });
+      commit('updateNoRecords', { channel, value: false });
     },
     materialize({ dispatch, commit }, { records, channel }) {
       dispatch('clear', { channel });

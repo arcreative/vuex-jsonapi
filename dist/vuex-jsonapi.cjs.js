@@ -5144,7 +5144,7 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       channel,
       type,
       ids,
-      params,
+      params = {},
       errorMessage = true,
       loadUnpersisted = true,
       loadAll = false,
@@ -5338,7 +5338,7 @@ var mapChannel = ((channel, name = null) => {
 });
 
 var index_esm = {
-  version: '0.7.5',
+  version: '0.7.6',
   Client,
   Record,
   Store,

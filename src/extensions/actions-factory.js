@@ -37,7 +37,7 @@ export default (apiClient, store, eventBus) => {
       channel,
       type,
       ids,
-      params,
+      params = {},
       errorMessage = true,
       loadUnpersisted = true,
       loadAll = false,

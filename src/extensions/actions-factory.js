@@ -1,5 +1,5 @@
-import get from 'lodash-es/get'
-import omit from 'lodash-es/omit'
+import extend from '../lib/extend'
+import get from '../lib/get'
 
 import Record from '../core/record'
 import RequestError from '../support/request-error'
@@ -7,9 +7,15 @@ import RequestError from '../support/request-error'
 export default (apiClient, store, eventBus) => {
   return {
     find({ commit, state }, { channel, type, id, params, errorMessage = true }) {
-      params = omit(params, (param) => {
-        return param === null || param === undefined;
-      });
+
+      // Drop any params that are null or undefined
+      params = extend({}, params);
+      for (let param in params) {
+        if (params.hasOwnProperty(param) && params[param] === null || typeof params[param] === 'undefined') {
+          delete params[param];
+        }
+      }
+
       commit('updateError', { channel, value: null });
       commit('updateLoading', { channel, value: true });
       commit('updateMeta', { channel, value: get(state, 'meta.' + channel) || {} });

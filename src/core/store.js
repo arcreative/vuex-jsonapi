@@ -1,5 +1,4 @@
-import extend from 'lodash-es/extend'
-import forEach from 'lodash-es/forEach'
+import extend from '../lib/extend'
 
 import Record from './record'
 import EventBus from './event-bus'
@@ -77,7 +76,7 @@ class Store {
     }
 
     // Persist, materialize, hydrate
-    forEach(data, item => {
+    data.forEach(item => {
       let record = this.getRecord(item.type, item.id);
       record.materialize(item);
       this.hydrateRecord(record);
@@ -110,19 +109,22 @@ class Store {
       relationships: {},
     };
 
-    for (var key in record) {
+    const relationshipNames = Object.keys(record._data.relationships);
+    for (let key in record) {
       if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
-        var prop = record[key];
+        const prop = record[key];
         if (prop instanceof Record) {
           body.relationships[key] = { data: { type: prop.type, id: prop.id } };
         } else if (prop instanceof Array && prop[0] instanceof Record) {
           body.relationships[key] = prop.map((item) => {
             return {data: {type: item.type, id: item.id}}
           });
-        } else if (Object.keys(record._data.relationships).indexOf(key) !== -1 && prop === null) {
-          body.relationships[key] = { data: null };
         } else {
-          body.attributes[key] = prop;
+          if (relationshipNames.indexOf(key) !== -1 && prop === null) {
+            body.relationships[key] = { data: null };
+          } else {
+            body.attributes[key] = prop;
+          }
         }
       }
     }
@@ -137,8 +139,8 @@ class Store {
    */
   hydrateRecord(record) {
     extend(record, record._data.attributes);
-    forEach(record._data.relationships, (item, name) => {
-      let data = item.data;
+    Object.keys(record._data.relationships).forEach(name => {
+      const data = record._data.relationships[name].data;
       if (!data) return;
       if (data instanceof Array) {
         this.Vue.set(record, name, data.map(item => {

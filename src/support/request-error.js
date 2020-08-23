@@ -1,4 +1,4 @@
-import get from 'lodash-es/get'
+import get from '../lib/get'
 
 const UNKNOWN_ERROR = 'An error occurred with your request, please try again momentarily';
 

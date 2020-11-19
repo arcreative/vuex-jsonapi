@@ -1,6 +1,6 @@
 {
   "name": "vuex-jsonapi",
-  "version": "0.7.7",
+  "version": "0.8.0",
   "description": "jsonapi.org API layer for Vue.js applications",
   "main": "dist/vuex-jsonapi.cjs.js",
   "module": "dist/vuex-jsonapi.esm.js",

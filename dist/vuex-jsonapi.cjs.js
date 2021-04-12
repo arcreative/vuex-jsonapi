@@ -92,7 +92,7 @@ class Client {
   save(record, options = {
     materialize: true
   }) {
-    return this.http[record.id ? 'patch' : 'post']('/' + record.type + (record.id ? '/' + record.id : ''), this.store.serializeRecord(record), options).then(res => {
+    return this.http[record._persisted ? 'patch' : 'post']('/' + record.type + (record._persisted ? '/' + record.id : ''), this.store.serializeRecord(record), options).then(res => {
       this.store.persist(record, res.data.data.id); // Sometimes we don't want to materialize--for instance, if we're sending a preflight request and don't want to
       // persist changes to the store
 

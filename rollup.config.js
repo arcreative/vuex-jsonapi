@@ -9,7 +9,8 @@ let plugins = [
     exclude: 'node_modules/**'
   }),
   replace({
-    __VERSION__: pkg.version
+    __VERSION__: pkg.version,
+    preventAssignment: true,
   }),
   resolve()
 ];

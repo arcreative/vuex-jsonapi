@@ -78,8 +78,8 @@ class Client {
    */
   save(record, options = { materialize: true }) {
     return this
-      .http[record.id ? 'patch' : 'post'](
-        '/' + record.type + (record.id ? '/' + record.id : ''),
+      .http[record._persisted ? 'patch' : 'post'](
+        '/' + record.type + (record._persisted ? '/' + record.id : ''),
         this.store.serializeRecord(record),
         options,
       )

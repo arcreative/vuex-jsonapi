@@ -1,8 +1,8 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = global || self, factory(global.VuexJsonapi = {}));
-}(this, (function (exports) { 'use strict';
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.VuexJsonapi = {}));
+})(this, (function (exports) { 'use strict';
 
   class Client {
     /**
@@ -469,14 +469,12 @@
               }
             };
           } else if (prop instanceof Array && prop[0] instanceof Record) {
-            body.relationships[key] = prop.map(item => {
-              return {
-                data: {
-                  type: item.type,
-                  id: item.id
-                }
-              };
-            });
+            body.relationships[key] = {
+              data: prop.map(item => ({
+                type: item.type,
+                id: item.id
+              }))
+            };
           } else {
             if (relationshipNames.indexOf(key) !== -1 && prop === null) {
               body.relationships[key] = {
@@ -1014,7 +1012,7 @@
   });
 
   var index_esm = {
-    version: '0.8.2',
+    version: '0.9.0',
     Client,
     Record,
     Store,
@@ -1051,9 +1049,9 @@
   exports.Record = Record;
   exports.RequestError = RequestError;
   exports.Store = Store;
-  exports.default = index_esm;
+  exports["default"] = index_esm;
   exports.mapChannel = mapChannel;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));

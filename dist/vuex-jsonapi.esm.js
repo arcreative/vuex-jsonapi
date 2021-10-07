@@ -463,14 +463,12 @@ class Store {
             }
           };
         } else if (prop instanceof Array && prop[0] instanceof Record) {
-          body.relationships[key] = prop.map(item => {
-            return {
-              data: {
-                type: item.type,
-                id: item.id
-              }
-            };
-          });
+          body.relationships[key] = {
+            data: prop.map(item => ({
+              type: item.type,
+              id: item.id
+            }))
+          };
         } else {
           if (relationshipNames.indexOf(key) !== -1 && prop === null) {
             body.relationships[key] = {
@@ -1008,7 +1006,7 @@ var mapChannel = ((channel, name = null, {
 });
 
 var index_esm = {
-  version: '0.8.2',
+  version: '0.9.0',
   Client,
   Record,
   Store,
@@ -1041,5 +1039,4 @@ var index_esm = {
 
 };
 
-export default index_esm;
-export { Client, Record, RequestError, Store, mapChannel };
+export { Client, Record, RequestError, Store, index_esm as default, mapChannel };

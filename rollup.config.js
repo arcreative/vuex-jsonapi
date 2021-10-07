@@ -1,4 +1,4 @@
-import babel from 'rollup-plugin-babel'
+import babel from '@rollup/plugin-babel'
 import replace from '@rollup/plugin-replace'
 import resolve from '@rollup/plugin-node-resolve'
 
@@ -6,7 +6,8 @@ import pkg from './package.json';
 
 let plugins = [
   babel({
-    exclude: 'node_modules/**'
+    exclude: 'node_modules/**',
+    babelHelpers: 'bundled',
   }),
   replace({
     __VERSION__: pkg.version,

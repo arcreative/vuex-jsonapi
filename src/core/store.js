@@ -116,9 +116,9 @@ class Store {
         if (prop instanceof Record) {
           body.relationships[key] = { data: { type: prop.type, id: prop.id } };
         } else if (prop instanceof Array && prop[0] instanceof Record) {
-          body.relationships[key] = prop.map((item) => {
-            return {data: {type: item.type, id: item.id}}
-          });
+          body.relationships[key] = {
+            data: prop.map(item => ({ type: item.type, id: item.id }))
+          };
         } else {
           if (relationshipNames.indexOf(key) !== -1 && prop === null) {
             body.relationships[key] = { data: null };

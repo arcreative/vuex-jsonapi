@@ -730,8 +730,10 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       type,
       id,
       params,
-      errorMessage = true
-    }) {
+      errorMessage = true,
+      onSuccess = null,
+      onError = null
+    } = {}) {
       // Drop any params that are null or undefined
       params = extend({}, params);
 
@@ -781,19 +783,28 @@ var actionsFactory = ((apiClient, store, eventBus) => {
           channel,
           value: data.length === 0
         });
+
+        if (onSuccess) {
+          onSuccess(data);
+        }
       }).catch(error => {
-        let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
-        let wrappedError = new RequestError(error, {
+        const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
+              wrappedError = new RequestError(error, {
           customMessage
-        });
+        }),
+              returnContext = {
+          error: wrappedError,
+          errorMessage
+        };
         commit('updateError', {
           channel,
           value: wrappedError
         });
-        eventBus.emit('didFindError', {
-          error: wrappedError,
-          errorMessage
-        });
+        eventBus.emit('didFindError', returnContext);
+
+        if (onError) {
+          onError(returnContext);
+        }
       }).finally(() => {
         commit('updateLoading', {
           channel,
@@ -814,8 +825,10 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       errorMessage = true,
       loadUnpersisted = true,
       loadAll = false,
-      filterParam = 'filter[id]'
-    }) {
+      filterParam = 'filter[id]',
+      onSuccess = null,
+      onError = null
+    } = {}) {
       // Track unpersisted IDs for sparse loading later
       let unpersistedIds = []; // Grab/instantiate all items from/to the store
 
@@ -836,8 +849,12 @@ var actionsFactory = ((apiClient, store, eventBus) => {
         dispatch('find', {
           channel,
           type,
-          params: params
+          params,
+          onSuccess,
+          onError
         });
+      } else if (onSuccess) {
+        onSuccess();
       }
 
       return records;
@@ -850,8 +867,10 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       params = {},
       materialize = true,
       successMessage = true,
-      errorMessage = true
-    }) {
+      errorMessage = true,
+      onSuccess = null,
+      onError = null
+    } = {}) {
       let persisted = record._persisted;
       apiClient.save(record, {
         params,
@@ -859,16 +878,14 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       }).then(({
         data
       }) => {
-        let record = data; // Notify of save/create/update
+        const record = data,
+              returnContext = {
+          record,
+          successMessage
+        }; // Notify of save/create/update
 
-        eventBus.emit('didSaveRecord', {
-          record,
-          successMessage
-        });
-        eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', {
-          record,
-          successMessage
-        }); // Notify that one or more records of this type changed
+        eventBus.emit('didSaveRecord', returnContext);
+        eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', returnContext); // Notify that one or more records of this type changed
 
         let type = record.type.split('_').map(part => {
           return part[0].toUpperCase() + part.slice(1, part.length);
@@ -876,17 +893,26 @@ var actionsFactory = ((apiClient, store, eventBus) => {
         eventBus.emit('didUpdate' + type, {
           record
         });
+
+        if (onSuccess) {
+          onSuccess(returnContext);
+        }
       }, error => {
-        let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
-        let wrappedError = new RequestError(error, {
+        const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
+              wrappedError = new RequestError(error, {
           record,
           customMessage
-        });
-        eventBus.emit('didSaveError', {
+        }),
+              returnContext = {
           record,
           error: wrappedError,
           errorMessage
-        });
+        };
+        eventBus.emit('didSaveError', returnContext);
+
+        if (onError) {
+          onError(returnContext);
+        }
       });
     },
 
@@ -895,8 +921,10 @@ var actionsFactory = ((apiClient, store, eventBus) => {
     }, {
       record,
       successMessage = true,
-      errorMessage = true
-    }) {
+      errorMessage = true,
+      onSuccess = null,
+      onError = null
+    } = {}) {
       apiClient.delete(record).then(() => {
         // Notify of save/create/update
         eventBus.emit('didDeleteRecord', {
@@ -910,16 +938,29 @@ var actionsFactory = ((apiClient, store, eventBus) => {
         eventBus.emit('didUpdate' + type, {
           record
         });
+
+        if (onSuccess) {
+          onSuccess({
+            record
+          });
+        }
       }, error => {
-        let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
-        let wrappedError = new RequestError(error, {
+        const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
+              wrappedError = new RequestError(error, {
           record,
           customMessage
-        });
-        eventBus.emit('didDeleteError', {
+        }),
+              returnContext = {
           error: wrappedError,
           errorMessage
-        });
+        };
+        eventBus.emit('didDeleteError', returnContext);
+
+        if (onError) {
+          onError({
+            record
+          });
+        }
       });
     },
 
@@ -1006,7 +1047,7 @@ var mapChannel = ((channel, name = null, {
 });
 
 var index_esm = {
-  version: '0.9.0',
+  version: '0.10.0',
   Client,
   Record,
   Store,

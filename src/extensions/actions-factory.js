@@ -6,7 +6,15 @@ import RequestError from '../support/request-error'
 
 export default (apiClient, store, eventBus) => {
   return {
-    find({ commit, state }, { channel, type, id, params, errorMessage = true }) {
+    find({ commit, state }, {
+      channel,
+      type,
+      id,
+      params,
+      errorMessage = true,
+      onSuccess = null,
+      onError = null,
+    } = {}) {
 
       // Drop any params that are null or undefined
       params = extend({}, params);
@@ -28,12 +36,15 @@ export default (apiClient, store, eventBus) => {
           commit('updateMeta', { channel, value: meta });
           commit('updateMoreRecords', { channel, value: meta.record_count > data.length });
           commit('updateNoRecords', { channel, value: data.length === 0 });
+          if (onSuccess) { onSuccess(data) }
         })
         .catch(error => {
-          let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
-          let wrappedError = new RequestError(error, { customMessage });
+          const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
+                wrappedError = new RequestError(error, { customMessage }),
+                returnContext = { error: wrappedError, errorMessage };
           commit('updateError', { channel, value: wrappedError });
-          eventBus.emit('didFindError', { error: wrappedError, errorMessage });
+          eventBus.emit('didFindError', returnContext);
+          if (onError) { onError(returnContext) }
         })
         .finally(() => {
           commit('updateLoading', { channel, value: false });
@@ -48,7 +59,9 @@ export default (apiClient, store, eventBus) => {
       loadUnpersisted = true,
       loadAll = false,
       filterParam = 'filter[id]',
-    }) {
+      onSuccess = null,
+      onError = null,
+    } = {}) {
 
       // Track unpersisted IDs for sparse loading later
       let unpersistedIds = [];
@@ -68,34 +81,54 @@ export default (apiClient, store, eventBus) => {
         params[filterParam] = loadAll ? ids.join(',') :unpersistedIds.join(',');
 
         // Fire this into the void, it'll deserialize onto the old object...
-        dispatch('find', { channel, type, params: params })
+        dispatch('find', { channel, type, params, onSuccess, onError });
+      } else if (onSuccess) {
+        onSuccess();
       }
 
       return records;
     },
-    save({ commit }, { record, params = {}, materialize = true, successMessage = true, errorMessage = true }) {
+    save({ commit }, {
+      record,
+      params = {},
+      materialize = true,
+      successMessage = true,
+      errorMessage = true,
+      onSuccess = null,
+      onError = null,
+    } = {}) {
       let persisted = record._persisted;
       apiClient
         .save(record, { params, materialize })
         .then(({ data }) => {
-          let record = data;
+          const record = data,
+                returnContext = { record, successMessage };
 
           // Notify of save/create/update
-          eventBus.emit('didSaveRecord', { record, successMessage });
-          eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', { record, successMessage });
+          eventBus.emit('didSaveRecord', returnContext);
+          eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', returnContext);
 
           // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
           eventBus.emit('didUpdate' + type, { record });
+          if (onSuccess) { onSuccess(returnContext) }
         }, error => {
-          let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
-          let wrappedError = new RequestError(error, { record, customMessage });
-          eventBus.emit('didSaveError', { record, error: wrappedError, errorMessage });
+          const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
+                wrappedError = new RequestError(error, { record, customMessage }),
+                returnContext = { record, error: wrappedError, errorMessage };
+          eventBus.emit('didSaveError', returnContext);
+          if (onError) { onError(returnContext) }
         });
     },
-    delete({ commit }, { record, successMessage = true, errorMessage = true }) {
+    delete({ commit }, {
+      record,
+      successMessage = true,
+      errorMessage = true,
+      onSuccess = null,
+      onError = null,
+    } = {}) {
       apiClient
         .delete(record)
         .then(() => {
@@ -107,10 +140,14 @@ export default (apiClient, store, eventBus) => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
           eventBus.emit('didUpdate' + type, { record });
+
+          if (onSuccess) { onSuccess({ record }) }
         }, error => {
-          let customMessage = typeof errorMessage === 'string' ? errorMessage : null;
-          let wrappedError = new RequestError(error, { record, customMessage });
-          eventBus.emit('didDeleteError', { error: wrappedError, errorMessage });
+          const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
+                wrappedError = new RequestError(error, { record, customMessage }),
+                returnContext = { error: wrappedError, errorMessage };
+          eventBus.emit('didDeleteError', returnContext);
+          if (onError) { onError({ record }) }
         });
     },
     clear({ commit, state }, { channel }) {

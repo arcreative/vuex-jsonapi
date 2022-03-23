@@ -7,10 +7,13 @@ class Store {
   /**
    * Store/cache for API records
    */
-  constructor(Vue, models) {
+  constructor(Vue, models, {
+    relationshipsForType = {}
+  } = {}) {
     this.Vue = Vue;
     this.data = models;
     this.eventBus = new EventBus();
+    this.relationshipsForType = relationshipsForType;
   }
 
   /**
@@ -109,22 +112,37 @@ class Store {
       relationships: {},
     };
 
+    // Build relationship names from relationships data hash, as well as what's specified by configuration object
     const relationshipNames = Object.keys(record._data.relationships);
+    (this.relationshipsForType[record.type] || []).forEach((name) => {
+      if (relationshipNames.indexOf(name) === -1) {
+        relationshipNames.push(name);
+      }
+    });
+
     for (let key in record) {
       if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
-        const prop = record[key];
-        if (prop instanceof Record) {
-          body.relationships[key] = { data: { type: prop.type, id: prop.id } };
-        } else if (prop instanceof Array && prop[0] instanceof Record) {
-          body.relationships[key] = {
-            data: prop.map(item => ({ type: item.type, id: item.id }))
-          };
-        } else {
-          if (relationshipNames.indexOf(key) !== -1 && prop === null) {
-            body.relationships[key] = { data: null };
+        const value = record[key],
+              inferredRecord = (value instanceof Record),
+              inferredRecordArray = (value instanceof Array && value[0] instanceof Record);
+
+        // Check if key is either explicitly or implicitly identified as a relationship
+        if (relationshipNames.indexOf(key) !== -1 || inferredRecord || inferredRecordArray) {
+          // Is a relationship
+          if (value instanceof Record) {
+            body.relationships[key] = { data: { type: value.type, id: value.id } };
+          } else if (value instanceof Array) {
+            body.relationships[key] = {
+              data: value.map(item => ({type: item.type, id: item.id})),
+            };
+          } else if (value === null) {
+            body.relationships[key] = { data: null }
           } else {
-            body.attributes[key] = prop;
+            throw new Error(`Error serializing a ${record.type}'s "${key}" attribute, as it was identified as a relationship but is not an Array or Record.`);
           }
+        } else {
+          // Is an attribute
+          body.attributes[key] = value;
         }
       }
     }

@@ -474,9 +474,9 @@ class Store {
             }))
           };
         } else {
-          if (relationshipNames.indexOf(key) !== -1 && prop === null) {
+          if (relationshipNames.indexOf(key) !== -1 && (prop === null || prop instanceof Array && prop.length === 0)) {
             body.relationships[key] = {
-              data: null
+              data: prop
             };
           } else {
             body.attributes[key] = prop;

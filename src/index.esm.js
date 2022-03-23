@@ -17,10 +17,13 @@ export default {
   Record,
   Store,
 
-  install(Vue, axiosClient, vuexStore, options = { storeEvents: true }) {
+  install(Vue, axiosClient, vuexStore, {
+    storeEvents = true,
+    relationshipsForType = {},
+  } = {}) {
 
     // Instantiate internal store/client/event bus
-    let store = new Store(Vue, state.models);
+    let store = new Store(Vue, state.models, { relationshipsForType });
     let apiClient = new Client(store, axiosClient);
     let eventBus = new EventBus();
 
@@ -33,7 +36,7 @@ export default {
     });
 
     // Extend $on/$off/$emit to Vuex Store
-    if (options.storeEvents) {
+    if (storeEvents) {
       eventBus.extendTo(vuexStore);
     }
 

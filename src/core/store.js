@@ -135,7 +135,7 @@ class Store {
             body.relationships[key] = {
               data: value.map(item => ({type: item.type, id: item.id})),
             };
-          } else if (value === null) {
+          } else if (value === null || typeof value === 'undefined') {
             body.relationships[key] = { data: null }
           } else {
             throw new Error(`Error serializing a ${record.type}'s "${key}" attribute, as it was identified as a relationship but is not an Array or Record.`);

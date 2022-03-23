@@ -486,7 +486,7 @@ class Store {
                 id: item.id
               }))
             };
-          } else if (value === null) {
+          } else if (value === null || typeof value === 'undefined') {
             body.relationships[key] = {
               data: null
             };

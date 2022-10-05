@@ -340,6 +340,16 @@ class Record {
 
 }
 
+// This function uses duck typing to infer whether an object is a Record class or not since `instanceof` checks while
+// using `yarn link` or `npm link` are unreliable/defunct.
+var isRecord = (item => {
+  if (!item) return false;
+  if (typeof item !== 'object') return false;
+  if (!item.type) return false;
+  if (typeof item.id === 'undefined') return false;
+  return true;
+});
+
 class Store {
   /**
    * Store/cache for API records
@@ -463,12 +473,12 @@ class Store {
     for (let key in record) {
       if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
         const value = record[key],
-              inferredRecord = value instanceof Record,
-              inferredRecordArray = value instanceof Array && value[0] instanceof Record; // Check if key is either explicitly or implicitly identified as a relationship
+              inferredRecord = isRecord(value),
+              inferredRecordArray = value instanceof Array && isRecord(value[0]); // Check if key is either explicitly or implicitly identified as a relationship
 
         if (relationshipNames.indexOf(key) !== -1 || inferredRecord || inferredRecordArray) {
           // Is a relationship
-          if (value instanceof Record) {
+          if (isRecord(value)) {
             body.relationships[key] = {
               data: {
                 type: value.type,
@@ -1062,7 +1072,7 @@ var mapChannel = ((channel, name = null, {
 });
 
 var index_esm = {
-  version: '0.11.0',
+  version: '0.11.1',
   Client,
   Record,
   Store,
@@ -1098,4 +1108,4 @@ var index_esm = {
 
 };
 
-export { Client, Record, RequestError, Store, index_esm as default, mapChannel };
+export { Client, Record, RequestError, Store, index_esm as default, isRecord, mapChannel };

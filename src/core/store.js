@@ -2,6 +2,7 @@ import extend from '../lib/extend'
 
 import Record from './record'
 import EventBus from './event-bus'
+import isRecord from '../support/is-record'
 
 class Store {
   /**
@@ -123,17 +124,17 @@ class Store {
     for (let key in record) {
       if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
         const value = record[key],
-              inferredRecord = (value instanceof Record),
-              inferredRecordArray = (value instanceof Array && value[0] instanceof Record);
+              inferredRecord = (isRecord(value)),
+              inferredRecordArray = (value instanceof Array && isRecord(value[0]));
 
         // Check if key is either explicitly or implicitly identified as a relationship
         if (relationshipNames.indexOf(key) !== -1 || inferredRecord || inferredRecordArray) {
           // Is a relationship
-          if (value instanceof Record) {
+          if (isRecord(value)) {
             body.relationships[key] = { data: { type: value.type, id: value.id } };
           } else if (value instanceof Array) {
             body.relationships[key] = {
-              data: value.map(item => ({type: item.type, id: item.id})),
+              data: value.map(item => ({ type: item.type, id: item.id })),
             };
           } else if (value === null || typeof value === 'undefined') {
             body.relationships[key] = { data: null }

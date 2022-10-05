@@ -8,6 +8,7 @@ import getters from './extensions/getters'
 import mutations from './extensions/mutations'
 import actionsFactory from './extensions/actions-factory'
 
+import isRecord from './support/is-record'
 import mapChannel from './support/map-channel'
 import RequestError from './support/request-error'
 
@@ -55,6 +56,7 @@ export {
   Store,
 
   // Support
+  isRecord,
   mapChannel,
   RequestError,
-}
+};

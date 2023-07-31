@@ -997,11 +997,12 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       commit,
       state
     }, {
-      channel
+      channel,
+      value = null
     }) {
       commit('updateChannel', {
         channel,
-        value: null
+        value
       });
       commit('updateError', {
         channel,

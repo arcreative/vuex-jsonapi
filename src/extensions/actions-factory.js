@@ -150,8 +150,8 @@ export default (apiClient, store, eventBus) => {
           if (onError) { onError({ record }) }
         });
     },
-    clear({ commit, state }, { channel }) {
-      commit('updateChannel', { channel, value: null });
+    clear({ commit, state }, { channel, value = null }) {
+      commit('updateChannel', { channel, value });
       commit('updateError', { channel, value: null });
       commit('updateLoading', { channel, value: false });
       commit('updateMeta', { channel, value: {} });

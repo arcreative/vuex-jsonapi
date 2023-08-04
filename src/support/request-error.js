@@ -4,7 +4,7 @@ const UNKNOWN_ERROR = 'An error occurred with your request, please try again mom
 
 export default class RequestError extends Error {
 
-  constructor(httpError, { record, customMessage = null }) {
+  constructor(httpError, { record = null, customMessage = null } = {}) {
     super();
     Object.assign(this, { record, customMessage, httpError });
     this.message = customMessage || this._getMessageFromHttpError();

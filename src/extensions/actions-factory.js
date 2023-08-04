@@ -14,6 +14,7 @@ export default (apiClient, store, eventBus) => {
       errorMessage = true,
       onSuccess = null,
       onError = null,
+      clear = false,
     } = {}) {
 
       // Drop any params that are null or undefined
@@ -24,6 +25,9 @@ export default (apiClient, store, eventBus) => {
         }
       }
 
+      if (clear) {
+        commit('updateChannel', { channel, value: id ? null : [] });
+      }
       commit('updateError', { channel, value: null });
       commit('updateLoading', { channel, value: true });
       commit('updateMeta', { channel, value: get(state, 'meta.' + channel) || {} });
@@ -150,8 +154,8 @@ export default (apiClient, store, eventBus) => {
           if (onError) { onError({ record }) }
         });
     },
-    clear({ commit, state }, { channel }) {
-      commit('updateChannel', { channel, value: null });
+    clear({ commit, state }, { channel, collection = true } = {}) {
+      commit('updateChannel', { channel, value: collection ? [] : null });
       commit('updateError', { channel, value: null });
       commit('updateLoading', { channel, value: false });
       commit('updateMeta', { channel, value: {} });

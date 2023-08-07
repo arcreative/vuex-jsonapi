@@ -679,9 +679,9 @@ var get = ((obj, path, defaultValue = undefined) => {
 const UNKNOWN_ERROR = 'An error occurred with your request, please try again momentarily';
 class RequestError extends Error {
   constructor(httpError, {
-    record,
+    record = null,
     customMessage = null
-  }) {
+  } = {}) {
     super();
     Object.assign(this, {
       record,
@@ -757,7 +757,8 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       params,
       errorMessage = true,
       onSuccess = null,
-      onError = null
+      onError = null,
+      clear = false
     } = {}) {
       // Drop any params that are null or undefined
       params = extend({}, params);
@@ -766,6 +767,13 @@ var actionsFactory = ((apiClient, store, eventBus) => {
         if (params.hasOwnProperty(param) && params[param] === null || typeof params[param] === 'undefined') {
           delete params[param];
         }
+      }
+
+      if (clear) {
+        commit('updateChannel', {
+          channel,
+          value: id ? null : []
+        });
       }
 
       commit('updateError', {
@@ -993,11 +1001,12 @@ var actionsFactory = ((apiClient, store, eventBus) => {
       commit,
       state
     }, {
-      channel
-    }) {
+      channel,
+      collection = true
+    } = {}) {
       commit('updateChannel', {
         channel,
-        value: null
+        value: collection ? [] : null
       });
       commit('updateError', {
         channel,
@@ -1072,7 +1081,7 @@ var mapChannel = ((channel, name = null, {
 });
 
 var index_esm = {
-  version: '0.11.1',
+  version: '0.12.0',
   Client,
   Record,
   Store,

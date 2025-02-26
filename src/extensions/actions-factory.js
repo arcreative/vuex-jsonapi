@@ -40,7 +40,7 @@ export default (apiClient, store, eventBus) => {
           commit('updateMeta', { channel, value: meta });
           commit('updateMoreRecords', { channel, value: meta.record_count > data.length });
           commit('updateNoRecords', { channel, value: data.length === 0 });
-          if (onSuccess) { onSuccess(data) }
+          if (onSuccess) { onSuccess(data, meta) }
         })
         .catch(error => {
           const customMessage = typeof errorMessage === 'string' ? errorMessage : null,

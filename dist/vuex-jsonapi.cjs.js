@@ -304,10 +304,14 @@ class Record {
 
 
   dirtyAttributes() {
-    let props = difference(Object.keys(this), ['id', 'type', '_data', '_persisted']);
+    // _data and _persisted would be ignored below, but just being explicit because those attributes are universal
+    let props = difference(Object.keys(this), ['id', 'type', '_data', '_persisted']); // Check each prop for changes
+
     return props.filter(prop => {
       let current = this[prop];
-      let relationship = this._data.relationships[prop];
+      let relationship = this._data.relationships[prop]; // Skip attributes prepended with _
+
+      if (prop.startsWith('_')) return false;
 
       if (relationship !== undefined) {
         // Relationship
@@ -822,7 +826,7 @@ var actionsFactory = ((apiClient, store, eventBus) => {
         });
 
         if (onSuccess) {
-          onSuccess(data);
+          onSuccess(data, meta);
         }
       }).catch(error => {
         const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
@@ -1085,7 +1089,7 @@ var mapChannel = ((channel, name = null, {
 });
 
 var index_esm = {
-  version: '0.12.0',
+  version: '0.13.0',
   Client,
   Record,
   Store,

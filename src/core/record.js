@@ -62,7 +62,27 @@ class Record {
    */
   clone() {
     let clone = Object.assign(new Record(this.type), this);
-    clone._data = deepClone(this._data);
+    let relationships = this._data.relationships || {};
+
+    Object.keys(clone).forEach(key => {
+      if (key === '_data') {
+        clone._data = deepClone(this._data);
+        return;
+      }
+
+      if (key.startsWith('_') || key === 'id' || key === 'type') return;
+
+      // Keep relationship records by reference, but detach relationship arrays.
+      if (relationships[key] !== undefined) {
+        if (this[key] instanceof Array) {
+          clone[key] = this[key].slice();
+        }
+        return;
+      }
+
+      clone[key] = deepClone(this[key]);
+    });
+
     return clone;
   }
 

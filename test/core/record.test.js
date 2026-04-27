@@ -45,6 +45,38 @@ describe('Record', () => {
     expect(copy._data.attributes.profile.name).toBe('matt');
   });
 
+  it('re-cloning after discarding an edited clone does not leak nested object attribute edits', () => {
+    const record = new Record('users');
+    record.materialize({
+      id: '1',
+      type: 'users',
+      attributes: {
+        configuration: {
+          notifications: {
+            email: true,
+            sms: false,
+          },
+        },
+      },
+      relationships: {},
+      meta: {},
+    });
+
+    // Simulate hydrated top-level attribute as done by Store.hydrateRecord.
+    record.configuration = {
+      notifications: {
+        email: true,
+        sms: false,
+      },
+    };
+
+    const firstClone = record.clone();
+    firstClone.configuration.notifications.sms = true;
+
+    const secondClone = record.clone();
+    expect(secondClone.configuration.notifications.sms).toBe(false);
+  });
+
   it('dirtyAttributes ignores underscore-prefixed properties', () => {
     const record = new Record('users');
     record.materialize({

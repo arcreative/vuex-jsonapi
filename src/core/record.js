@@ -1,6 +1,6 @@
+import deepClone from '../lib/deepClone'
 import difference from '../lib/difference'
-import extend from '../lib/extend'
-import isEqual from '../lib/isEqual'
+import isAttributeEqual from '../lib/isAttributeEqual'
 
 class Record {
   /**
@@ -30,10 +30,10 @@ class Record {
   materialize(data = { id: null, type: null, attributes: {}, relationships: {}, meta: {} }) {
     this._persisted = true;
     this.id = data.id || this.id;
-    this.type = data.type || this.id;
-    this._data.attributes = extend(this._data.attributes, data.attributes);
-    this._data.relationships = extend(this._data.relationships, data.relationships);
-    this._data.meta = extend(this._data.meta, data.meta);
+    this.type = data.type || this.type;
+    this._data.attributes = deepClone(data.attributes || {});
+    this._data.relationships = deepClone(data.relationships || {});
+    this._data.meta = deepClone(data.meta || {});
     return this;
   }
 
@@ -61,7 +61,9 @@ class Record {
    * @returns {Record}
    */
   clone() {
-    return Object.assign(new Record(this.type), this);
+    let clone = Object.assign(new Record(this.type), this);
+    clone._data = deepClone(this._data);
+    return clone;
   }
 
   /**
@@ -102,40 +104,27 @@ class Record {
       if (prop.startsWith('_')) return false;
 
       if (relationship !== undefined) {
-        // Relationship
-        if (relationship.data instanceof Array) {
-          // Has many
-          current = current || [];
+        const relationshipData = relationship.data;
 
-          // Different number of elements is automatic fail
-          if (current.length !== relationship.data.length) return true;
+        if (relationshipData instanceof Array) {
+          if (!(current instanceof Array)) current = current || [];
+          if (!(current instanceof Array)) return true;
+          if (current.length !== relationshipData.length) return true;
 
-          // Map the items to sortable identifiers
-          let a = current.map(item => (`${item.type}:${item.id}`));
-          let b = relationship.data.map(item => (`${item.type}:${item.id}`));
-
-          // Compare
-          return !isEqual(a.sort(), b.sort());
-        } else if (relationship.data instanceof Object) {
-          // Belongs to
-          if (
-            !!current !== !!relationship.data ||
-            current.id !== relationship.data.id ||
-            current.type !== relationship.data.type
-          ) {
-            return true;
-          }
-        } else {
-          // Not loaded
-          if (current) {
-            // But new value is set
-            return true;
-          }
+          const currentKeys = current.map(value => `${value.type}:${value.id}`).sort();
+          const relationshipKeys = relationshipData.map(value => `${value.type}:${value.id}`).sort();
+          return !isAttributeEqual(currentKeys, relationshipKeys);
         }
-        return false;
+
+        if (relationshipData instanceof Object) {
+          return !isAttributeEqual(current, relationshipData);
+        }
+
+        // Not loaded: only dirty when a new value is set.
+        return !!current;
       } else {
-        // Attribute
-        return current !== this._data.attributes[prop];
+        // Scalar attribute (including objects/arrays)
+        return !isAttributeEqual(current, this._data.attributes[prop]);
       }
     });
   }

@@ -15,6 +15,7 @@
       this.store = store;
       this.http = http;
     }
+
     /**
      * Performs a request to an API endpoint and returns the response object
      *
@@ -23,8 +24,6 @@
      * @param options
      * @returns {Promise<*>}
      */
-
-
     request(method, url, {
       data,
       params
@@ -36,6 +35,7 @@
         params
       });
     }
+
     /**
      * Performs a request to an API endpoint and materializes and returns the resultant records
      *
@@ -44,11 +44,10 @@
      * @param options
      * @returns {Promise<Record|Record[]>}
      */
-
-
     requestRecords(method, url, options = {}) {
       return this.request(method, url, options).then(this.store.materializeRecords.bind(this.store));
     }
+
     /**
      * Wrapped get request
      *
@@ -57,13 +56,12 @@
      * @param params
      * @returns {Promise<*>}
      */
-
-
     get(type, id, params) {
       return this.http.get('/' + type + (id ? '/' + id : ''), {
         params
       }).then(this.store.materializeRecords.bind(this.store));
     }
+
     /**
      * Finds one or more records
      *
@@ -72,16 +70,14 @@
      * @param options
      * @returns {Promise<Record|Record[]>}
      */
-
-
     find(type, id, options = {}) {
       if (id instanceof Object) {
         options = id;
         id = null;
       }
-
       return this.get(type, id, options);
     }
+
     /**
      * Wrapped post/put/patch request
      *
@@ -89,15 +85,14 @@
      * @param options
      * @returns {Promise<*>}
      */
-
-
     save(record, options = {
       materialize: true
     }) {
       return this.http[record._persisted ? 'patch' : 'post']('/' + record.type + (record._persisted ? '/' + record.id : ''), this.store.serializeRecord(record), options).then(res => {
-        this.store.persist(record, res.data.data.id); // Sometimes we don't want to materialize--for instance, if we're sending a preflight request and don't want to
-        // persist changes to the store
+        this.store.persist(record, res.data.data.id);
 
+        // Sometimes we don't want to materialize--for instance, if we're sending a preflight request and don't want to
+        // persist changes to the store
         if (options.materialize) {
           return this.store.materializeRecords.call(this.store, res);
         } else {
@@ -110,40 +105,34 @@
         }
       });
     }
+
     /**
      * Wrapped delete request
      *
      * @param record
      * @returns {Promise<*>}
      */
-
-
     delete(record) {
       return this.http.delete('/' + record.type + '/' + record.id);
     }
-
   }
 
   class EventBus {
     constructor() {
       this.handlers = {};
     }
-
     on(event, handler) {
       this.handlers[event] = this.handlers[event] || [];
       this.handlers[event].push(handler);
     }
-
     off(event, handler) {
       if (this.handlers[event]) {
         let index = this.handlers[event].indexOf(handler);
-
         if (index > -1) {
           this.handlers[event].splice(index, 1);
         }
       }
     }
-
     emit(event, context = {}) {
       if (this.handlers[event]) {
         for (let i = 0; i < this.handlers[event].length; i++) {
@@ -151,61 +140,133 @@
         }
       }
     }
-
     extendTo(store) {
       store.$on = this.on.bind(this);
       store.$off = this.off.bind(this);
       store.$emit = this.emit.bind(this);
     }
-
   }
+
+  const objectProto$2 = Object.prototype;
+  const isPlainObject = value => value !== null && typeof value === 'object' && objectProto$2.toString.call(value) === '[object Object]';
+
+  const deepClone = value => {
+    if (value instanceof Date) {
+      return new Date(value.getTime());
+    }
+    if (value instanceof Array) {
+      return value.map(item => deepClone(item));
+    }
+    if (isPlainObject(value)) {
+      const cloned = {};
+      Object.keys(value).forEach(key => {
+        cloned[key] = deepClone(value[key]);
+      });
+      return cloned;
+    }
+    return value;
+  };
 
   // https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_difference
   // Removed use of `includes` in favor of `indexOf` for Browser compatibility
-  var difference = ((a, b) => {
+  var difference = (a, b) => {
     return [a, b].reduce(function (a, b) {
       return a.filter(function (value) {
         return b.indexOf(value) === -1;
       });
     });
-  });
+  };
 
-  // https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_extend
-  var extend = ((target, ...sources) => {
-    const length = sources.length;
-    if (length < 1 || target == null) return target;
+  function getDefaultExportFromCjs (x) {
+  	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+  }
 
-    for (let i = 0; i < length; i++) {
-      const source = sources[i];
+  var fastDeepEqual;
+  var hasRequiredFastDeepEqual;
 
-      for (const key in source) {
-        target[key] = source[key];
+  function requireFastDeepEqual () {
+  	if (hasRequiredFastDeepEqual) return fastDeepEqual;
+  	hasRequiredFastDeepEqual = 1;
+
+  	// do not edit .js files directly - edit src/index.jst
+
+
+
+  	fastDeepEqual = function equal(a, b) {
+  	  if (a === b) return true;
+
+  	  if (a && b && typeof a == 'object' && typeof b == 'object') {
+  	    if (a.constructor !== b.constructor) return false;
+
+  	    var length, i, keys;
+  	    if (Array.isArray(a)) {
+  	      length = a.length;
+  	      if (length != b.length) return false;
+  	      for (i = length; i-- !== 0;)
+  	        if (!equal(a[i], b[i])) return false;
+  	      return true;
+  	    }
+
+
+
+  	    if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
+  	    if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
+  	    if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
+
+  	    keys = Object.keys(a);
+  	    length = keys.length;
+  	    if (length !== Object.keys(b).length) return false;
+
+  	    for (i = length; i-- !== 0;)
+  	      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
+
+  	    for (i = length; i-- !== 0;) {
+  	      var key = keys[i];
+
+  	      if (!equal(a[key], b[key])) return false;
+  	    }
+
+  	    return true;
+  	  }
+
+  	  // true if both NaN, false otherwise
+  	  return a!==a && b!==b;
+  	};
+  	return fastDeepEqual;
+  }
+
+  var fastDeepEqualExports = requireFastDeepEqual();
+  var isEqual = /*@__PURE__*/getDefaultExportFromCjs(fastDeepEqualExports);
+
+  const objectProto$1 = Object.prototype;
+  const isRecordReference = value => isPlainObject(value) && objectProto$1.hasOwnProperty.call(value, 'id') && objectProto$1.hasOwnProperty.call(value, 'type');
+
+  const objectProto = Object.prototype;
+  const isAttributeEqual = (a, b) => {
+    // Compare record-like objects as identity references only.
+    if (isRecordReference(a) || isRecordReference(b)) {
+      return isRecordReference(a) && isRecordReference(b) && a.id === b.id && a.type === b.type;
+    }
+    if (a instanceof Array || b instanceof Array) {
+      if (!(a instanceof Array) || !(b instanceof Array)) return false;
+      if (a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) {
+        if (!isAttributeEqual(a[i], b[i])) return false;
       }
-    }
-
-    return target;
-  });
-
-  // From https://stackoverflow.com/questions/3115982/how-to-check-if-two-arrays-are-equal-with-javascript#answer-10316616
-  // Option 3 (more efficient than other options)
-  const isEqual = (a, b) => {
-    /*
-        Array-aware equality checker:
-        Returns whether arguments a and b are == to each other;
-        however if they are equal-lengthed arrays, returns whether their
-        elements are pairwise == to each other recursively under this
-        definition.
-    */
-    if (a instanceof Array && b instanceof Array) {
-      // assert same length
-      if (a.length !== b.length) return false; // assert each element equal
-
-      for (let i = 0; i < a.length; i++) if (!isEqual(a[i], b[i])) return false;
-
       return true;
-    } else {
-      return a === b; // if not both arrays, should be the same
     }
+    if (isPlainObject(a) && isPlainObject(b)) {
+      let aKeys = Object.keys(a);
+      let bKeys = Object.keys(b);
+      if (aKeys.length !== bKeys.length) return false;
+      for (let i = 0; i < aKeys.length; i++) {
+        let key = aKeys[i];
+        if (!objectProto.hasOwnProperty.call(b, key)) return false;
+        if (!isAttributeEqual(a[key], b[key])) return false;
+      }
+      return true;
+    }
+    return isEqual(a, b);
   };
 
   class Record {
@@ -226,14 +287,13 @@
       };
       Object.assign(this, data);
     }
+
     /**
      * Persists and materializes record from HTTP response body
      *
      * @param data
      * @returns {Record}
      */
-
-
     materialize(data = {
       id: null,
       type: null,
@@ -243,19 +303,18 @@
     }) {
       this._persisted = true;
       this.id = data.id || this.id;
-      this.type = data.type || this.id;
-      this._data.attributes = extend(this._data.attributes, data.attributes);
-      this._data.relationships = extend(this._data.relationships, data.relationships);
-      this._data.meta = extend(this._data.meta, data.meta);
+      this.type = data.type || this.type;
+      this._data.attributes = deepClone(data.attributes || {});
+      this._data.relationships = deepClone(data.relationships || {});
+      this._data.meta = deepClone(data.meta || {});
       return this;
     }
+
     /**
      * Gets an attribute without throwing a traversal error
      *
      * @param path
      */
-
-
     get(path) {
       path = path.split('.');
       let val = this;
@@ -268,28 +327,27 @@
       });
       return val;
     }
+
     /**
      * Creates an editable clone that will deserialize into the same record
      *
      * @returns {Record}
      */
-
-
     clone() {
-      return Object.assign(new Record(this.type), this);
+      let clone = Object.assign(new Record(this.type), this);
+      clone._data = deepClone(this._data);
+      return clone;
     }
+
     /**
      * Checks if record, attribute, or set of attributes is dirty
      * Note: this does not currently support hasMany relationships
      *
      * @param attributes {null|String|String[]}
      */
-
-
     dirty(attributes = null) {
       if (!this._persisted) return true;
       let dirtyAttrs = this.dirtyAttributes();
-
       if (attributes === null && dirtyAttrs.length) {
         return true;
       } else if (attributes instanceof Array) {
@@ -298,67 +356,69 @@
         return dirtyAttrs.indexOf(attributes) !== -1;
       }
     }
+
     /**
      * Returns all dirty attributes
      *
      * @returns {Array}
      */
-
-
     dirtyAttributes() {
       // _data and _persisted would be ignored below, but just being explicit because those attributes are universal
-      let props = difference(Object.keys(this), ['id', 'type', '_data', '_persisted']); // Check each prop for changes
+      let props = difference(Object.keys(this), ['id', 'type', '_data', '_persisted']);
 
+      // Check each prop for changes
       return props.filter(prop => {
         let current = this[prop];
-        let relationship = this._data.relationships[prop]; // Skip attributes prepended with _
+        let relationship = this._data.relationships[prop];
 
+        // Skip attributes prepended with _
         if (prop.startsWith('_')) return false;
-
         if (relationship !== undefined) {
-          // Relationship
-          if (relationship.data instanceof Array) {
-            // Has many
-            current = current || []; // Different number of elements is automatic fail
-
-            if (current.length !== relationship.data.length) return true; // Map the items to sortable identifiers
-
-            let a = current.map(item => `${item.type}:${item.id}`);
-            let b = relationship.data.map(item => `${item.type}:${item.id}`); // Compare
-
-            return !isEqual(a.sort(), b.sort());
-          } else if (relationship.data instanceof Object) {
-            // Belongs to
-            if (!!current !== !!relationship.data || current.id !== relationship.data.id || current.type !== relationship.data.type) {
-              return true;
-            }
-          } else {
-            // Not loaded
-            if (current) {
-              // But new value is set
-              return true;
-            }
+          const relationshipData = relationship.data;
+          if (relationshipData instanceof Array) {
+            if (!(current instanceof Array)) current = current || [];
+            if (!(current instanceof Array)) return true;
+            if (current.length !== relationshipData.length) return true;
+            const currentKeys = current.map(value => `${value.type}:${value.id}`).sort();
+            const relationshipKeys = relationshipData.map(value => `${value.type}:${value.id}`).sort();
+            return !isAttributeEqual(currentKeys, relationshipKeys);
+          }
+          if (relationshipData instanceof Object) {
+            return !isAttributeEqual(current, relationshipData);
           }
 
-          return false;
+          // Not loaded: only dirty when a new value is set.
+          return !!current;
         } else {
-          // Attribute
-          return current !== this._data.attributes[prop];
+          // Scalar attribute (including objects/arrays)
+          return !isAttributeEqual(current, this._data.attributes[prop]);
         }
       });
     }
-
   }
+
+  // https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_extend
+  var extend = (target, ...sources) => {
+    const length = sources.length;
+    if (length < 1 || target == null) return target;
+    for (let i = 0; i < length; i++) {
+      const source = sources[i];
+      for (const key in source) {
+        target[key] = source[key];
+      }
+    }
+    return target;
+  };
 
   // This function uses duck typing to infer whether an object is a Record class or not since `instanceof` checks while
   // using `yarn link` or `npm link` are unreliable/defunct.
-  var isRecord = (item => {
+  var isRecord = item => {
     if (!item) return false;
     if (typeof item !== 'object') return false;
     if (!item.type) return false;
     if (typeof item.id === 'undefined') return false;
     return true;
-  });
+  };
 
   class Store {
     /**
@@ -372,6 +432,7 @@
       this.eventBus = new EventBus();
       this.relationshipsForType = relationshipsForType;
     }
+
     /**
      * Gets a record, instantiating in store if needed
      *
@@ -379,14 +440,13 @@
      * @param id
      * @returns {Record}
      */
-
-
     getRecord(type, id) {
       this.data[type] = this.data[type] || {};
       this.data[type][id] = this.data[type][id] || new Record(type);
       this.data[type][id].id = id;
       return this.data[type][id];
     }
+
     /**
      * Set a new record on the store for subsequent retrieval
      *
@@ -394,62 +454,59 @@
      * @param id
      * @returns {Record}
      */
-
-
     persist(record, id) {
       this.data[record.type] = this.data[record.type] || {};
       this.data[record.type][id] = record;
       return record;
     }
+
     /**
      * Materializes and returns records from an HTTP response body
      *
      * @param data
      * @returns {{data: Array, response: *, meta, included: Array}}
      */
-
-
     materializeRecords(data) {
-      let response = data; // If HTTP response and included is found, materialize all included records first so they're available to the
+      let response = data;
+
+      // If HTTP response and included is found, materialize all included records first so they're available to the
       // main records
-
       let included = [];
-
       if (data && data.data && data.data.included) {
         included = this.materializeRecords(data.data.included).data;
-      } // Capture the meta
+      }
 
-
+      // Capture the meta
       let meta = {};
-
       if (data && data.data && data.data.meta) {
         meta = data.data.meta;
-      } // If HTTP response, set data to response's data element
+      }
 
-
+      // If HTTP response, set data to response's data element
       if (data && data.data && data.data.data) {
         data = data.data.data;
-      } // Coerce response into array for iteration
+      }
 
-
+      // Coerce response into array for iteration
       let single = false;
       let ret = [];
-
       if (!(data instanceof Array)) {
         single = true;
         data = [data];
-      } // Persist, materialize, hydrate
+      }
 
-
+      // Persist, materialize, hydrate
       data.forEach(item => {
         let record = this.getRecord(item.type, item.id);
         record.materialize(item);
         this.hydrateRecord(record);
         ret.push(record);
-      }); // Transform back to response data format
+      });
 
-      ret = single ? ret[0] : ret; // Send it on
+      // Transform back to response data format
+      ret = single ? ret[0] : ret;
 
+      // Send it on
       return {
         response,
         data: ret,
@@ -457,35 +514,35 @@
         meta
       };
     }
+
     /**
      * Serializes record into server-friendly body
      *
      * @param record
      * @returns Object
      */
-
-
     serializeRecord(record) {
       let body = {
         id: record.id,
         type: record.type,
         attributes: {},
         relationships: {}
-      }; // Build relationship names from relationships data hash, as well as what's specified by configuration object
+      };
 
+      // Build relationship names from relationships data hash, as well as what's specified by configuration object
       const relationshipNames = Object.keys(record._data.relationships);
       (this.relationshipsForType[record.type] || []).forEach(name => {
         if (relationshipNames.indexOf(name) === -1) {
           relationshipNames.push(name);
         }
       });
-
       for (let key in record) {
         if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
           const value = record[key],
-                inferredRecord = isRecord(value),
-                inferredRecordArray = value instanceof Array && isRecord(value[0]); // Check if key is either explicitly or implicitly identified as a relationship
+            inferredRecord = isRecord(value),
+            inferredRecordArray = value instanceof Array && isRecord(value[0]);
 
+          // Check if key is either explicitly or implicitly identified as a relationship
           if (relationshipNames.indexOf(key) !== -1 || inferredRecord || inferredRecordArray) {
             // Is a relationship
             if (isRecord(value)) {
@@ -515,24 +572,21 @@
           }
         }
       }
-
       return {
         data: body
       };
     }
+
     /**
      * Hydrates top level with attributes and available relationships from store
      *
      * @param record
      */
-
-
     hydrateRecord(record) {
-      extend(record, record._data.attributes);
+      extend(record, deepClone(record._data.attributes));
       Object.keys(record._data.relationships).forEach(name => {
         const data = record._data.relationships[name].data;
         if (!data) return;
-
         if (data instanceof Array) {
           this.Vue.set(record, name, data.map(item => {
             return this.getRecord(item.type, item.id);
@@ -542,40 +596,36 @@
         }
       });
     }
+
     /**
      * Registers an event handler for a particular event type
      *
      * @param event Event name
      * @param handler Event handler
      */
-
-
     $on(event, handler) {
       this.eventBus.on(event, handler);
     }
+
     /**
      * Deregisters an event handler for a particular event type
      *
      * @param event Event name
      * @param handler Event handler
      */
-
-
     $off(event, handler) {
       this.eventBus.off(event, handler);
     }
+
     /**
      * Emits an event
      *
      * @param event Event name
      * @param context Data/context to be passed with event
      */
-
-
     $emit(event, context) {
       this.eventBus.emit(event, context);
     }
-
   }
 
   var state = {
@@ -594,43 +644,36 @@
         return ids.map(id => state.models[type][id]);
       };
     },
-
     channel(state) {
       return channel => {
         return state.channels[channel];
       };
     },
-
     error(state) {
       return channel => {
         return state.error[channel];
       };
     },
-
     loading(state) {
       return channel => {
         return state.loading[channel];
       };
     },
-
     meta(state) {
       return channel => {
         return state.meta[channel];
       };
     },
-
     moreRecords(state) {
       return channel => {
         return state.moreRecords[channel];
       };
     },
-
     noRecords(state) {
       return channel => {
         return state.noRecords[channel];
       };
     }
-
   };
 
   var mutations = {
@@ -640,51 +683,44 @@
     }) {
       this._vm.$set(state.channels, channel, value);
     },
-
     updateError(state, {
       channel,
       value
     }) {
       this._vm.$set(state.error, channel, value);
     },
-
     updateLoading(state, {
       channel,
       value
     }) {
       this._vm.$set(state.loading, channel, value);
     },
-
     updateMeta(state, {
       channel,
       value
     }) {
       this._vm.$set(state.meta, channel, value);
     },
-
     updateMoreRecords(state, {
       channel,
       value
     }) {
       this._vm.$set(state.moreRecords, channel, value);
     },
-
     updateNoRecords(state, {
       channel,
       value
     }) {
       this._vm.$set(state.noRecords, channel, value);
     }
-
   };
 
   // https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_get
-  var get = ((obj, path, defaultValue = undefined) => {
+  var get = (obj, path, defaultValue = undefined) => {
     const travel = regexp => String.prototype.split.call(path, regexp).filter(Boolean).reduce((res, key) => res !== null && res !== undefined ? res[key] : res, obj);
-
     const result = travel(/[,[\]]+?/) || travel(/[,[\].]+?/);
     return result === undefined || result === obj ? defaultValue : result;
-  });
+  };
 
   const UNKNOWN_ERROR = 'An error occurred with your request, please try again momentarily';
   class RequestError extends Error {
@@ -700,23 +736,18 @@
       });
       this.message = customMessage || this._getMessageFromHttpError();
     }
-
     request() {
       return get(this, 'httpError.request');
     }
-
     response() {
       return get(this, 'httpError.response');
     }
-
     record() {
       return this.record;
     }
-
     errors() {
       return get(this, 'httpError.response.data.errors') || [];
     }
-
     attributeErrors() {
       let ret = {};
       this.errors().map(error => {
@@ -726,36 +757,28 @@
       });
       return ret;
     }
-
     _getMessageFromHttpError() {
       if (this.httpError && this.httpError.response && this.httpError.response.status) {
         switch (this.httpError.response.status) {
           case 400:
             return 'An error occurred with your request, please contact support with more information';
-
           case 401:
             return 'Please log in to continue';
-
           case 403:
             return 'You don\'t have permission to perform that action';
-
           case 404:
             return 'That record cannot be found';
-
           case 422:
             return 'Error saving record';
-
           default:
             return UNKNOWN_ERROR;
         }
       }
-
       return UNKNOWN_ERROR;
     }
-
   }
 
-  var actionsFactory = ((apiClient, store, eventBus) => {
+  var actionsFactory = (apiClient, store, eventBus) => {
     return {
       find({
         commit,
@@ -772,20 +795,17 @@
       } = {}) {
         // Drop any params that are null or undefined
         params = extend({}, params);
-
         for (let param in params) {
           if (params.hasOwnProperty(param) && params[param] === null || typeof params[param] === 'undefined') {
             delete params[param];
           }
         }
-
         if (clear) {
           commit('updateChannel', {
             channel,
             value: id ? null : []
           });
         }
-
         commit('updateError', {
           channel,
           value: null
@@ -826,25 +846,23 @@
             channel,
             value: data.length === 0
           });
-
           if (onSuccess) {
             onSuccess(data, meta);
           }
         }).catch(error => {
           const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
-                wrappedError = new RequestError(error, {
-            customMessage
-          }),
-                returnContext = {
-            error: wrappedError,
-            errorMessage
-          };
+            wrappedError = new RequestError(error, {
+              customMessage
+            }),
+            returnContext = {
+              error: wrappedError,
+              errorMessage
+            };
           commit('updateError', {
             channel,
             value: wrappedError
           });
           eventBus.emit('didFindError', returnContext);
-
           if (onError) {
             onError(returnContext);
           }
@@ -855,7 +873,6 @@
           });
         });
       },
-
       findSparse({
         commit,
         state,
@@ -873,8 +890,9 @@
         onError = null
       } = {}) {
         // Track unpersisted IDs for sparse loading later
-        let unpersistedIds = []; // Grab/instantiate all items from/to the store
+        let unpersistedIds = [];
 
+        // Grab/instantiate all items from/to the store
         let records = ids.map(id => {
           if (state.models[type] && state.models[type][id]) {
             return state.models[type][id];
@@ -884,11 +902,13 @@
               id
             }), id);
           }
-        }); // Load records if loadAll is set, or if loadUnpersisted is set and one or more records are unpersisted
+        });
 
+        // Load records if loadAll is set, or if loadUnpersisted is set and one or more records are unpersisted
         if (loadAll || loadUnpersisted && unpersistedIds.length > 0) {
-          params[filterParam] = loadAll ? ids.join(',') : unpersistedIds.join(','); // Fire this into the void, it'll deserialize onto the old object...
+          params[filterParam] = loadAll ? ids.join(',') : unpersistedIds.join(',');
 
+          // Fire this into the void, it'll deserialize onto the old object...
           dispatch('find', {
             channel,
             type,
@@ -899,10 +919,8 @@
         } else if (onSuccess) {
           onSuccess();
         }
-
         return records;
       },
-
       save({
         commit
       }, {
@@ -922,43 +940,42 @@
           data
         }) => {
           const record = data,
-                returnContext = {
-            record,
-            successMessage
-          }; // Notify of save/create/update
+            returnContext = {
+              record,
+              successMessage
+            };
 
+          // Notify of save/create/update
           eventBus.emit('didSaveRecord', returnContext);
-          eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', returnContext); // Notify that one or more records of this type changed
+          eventBus.emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', returnContext);
 
+          // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
           eventBus.emit('didUpdate' + type, {
             record
           });
-
           if (onSuccess) {
             onSuccess(returnContext);
           }
         }, error => {
           const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
-                wrappedError = new RequestError(error, {
-            record,
-            customMessage
-          }),
-                returnContext = {
-            record,
-            error: wrappedError,
-            errorMessage
-          };
+            wrappedError = new RequestError(error, {
+              record,
+              customMessage
+            }),
+            returnContext = {
+              record,
+              error: wrappedError,
+              errorMessage
+            };
           eventBus.emit('didSaveError', returnContext);
-
           if (onError) {
             onError(returnContext);
           }
         });
       },
-
       delete({
         commit
       }, {
@@ -973,15 +990,15 @@
           eventBus.emit('didDeleteRecord', {
             record,
             successMessage
-          }); // Notify that one or more records of this type changed
+          });
 
+          // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
           eventBus.emit('didUpdate' + type, {
             record
           });
-
           if (onSuccess) {
             onSuccess({
               record
@@ -989,16 +1006,15 @@
           }
         }, error => {
           const customMessage = typeof errorMessage === 'string' ? errorMessage : null,
-                wrappedError = new RequestError(error, {
-            record,
-            customMessage
-          }),
-                returnContext = {
-            error: wrappedError,
-            errorMessage
-          };
+            wrappedError = new RequestError(error, {
+              record,
+              customMessage
+            }),
+            returnContext = {
+              error: wrappedError,
+              errorMessage
+            };
           eventBus.emit('didDeleteError', returnContext);
-
           if (onError) {
             onError({
               record
@@ -1006,7 +1022,6 @@
           }
         });
       },
-
       clear({
         commit,
         state
@@ -1039,7 +1054,6 @@
           value: false
         });
       },
-
       materialize({
         dispatch,
         commit
@@ -1055,47 +1069,39 @@
           value: store.materializeRecords(records).data
         });
       }
-
     };
-  });
+  };
 
-  var mapChannel = ((channel, name = null, {
+  var mapChannel = (channel, name = null, {
     dynamic = false
   } = {}) => {
     return {
       [name ? name : 'model']() {
         return this.$store.getters.channel(dynamic ? this[channel] : channel);
       },
-
       [name ? name + 'Error' : 'error']() {
         return this.$store.getters.error(dynamic ? this[channel] : channel);
       },
-
       [name ? name + 'Loading' : 'loading']() {
         return this.$store.getters.loading(dynamic ? this[channel] : channel);
       },
-
       [name ? name + 'Meta' : 'meta']() {
         return this.$store.getters.meta(dynamic ? this[channel] : channel);
       },
-
       [name ? name + 'MoreRecords' : 'moreRecords']() {
         return this.$store.getters.moreRecords(dynamic ? this[channel] : channel);
       },
-
       [name ? name + 'NoRecords' : 'noRecords']() {
         return this.$store.getters.noRecords(dynamic ? this[channel] : channel);
       }
-
     };
-  });
+  };
 
   var index_esm = {
     version: '0.13.0',
     Client,
     Record,
     Store,
-
     install(Vue, axiosClient, vuexStore, {
       storeEvents = true,
       relationshipsForType = {}
@@ -1105,26 +1111,27 @@
         relationshipsForType
       });
       let apiClient = new Client(store, axiosClient);
-      let eventBus = new EventBus(); // Register module with Vuex
+      let eventBus = new EventBus();
 
+      // Register module with Vuex
       vuexStore.registerModule('vuexJsonapi', {
         state,
         getters,
         mutations,
         actions: actionsFactory(apiClient, store, eventBus)
-      }); // Extend $on/$off/$emit to Vuex Store
+      });
 
+      // Extend $on/$off/$emit to Vuex Store
       if (storeEvents) {
         eventBus.extendTo(vuexStore);
-      } // Return instantiated helpers
+      }
 
-
+      // Return instantiated helpers
       return {
         apiClient,
         eventBus
       };
     }
-
   };
 
   exports.Client = Client;

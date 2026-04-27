@@ -1,4 +1,5 @@
 import extend from '../lib/extend'
+import deepClone from '../lib/deepClone'
 
 import Record from './record'
 import EventBus from './event-bus'
@@ -157,7 +158,7 @@ class Store {
    * @param record
    */
   hydrateRecord(record) {
-    extend(record, record._data.attributes);
+    extend(record, deepClone(record._data.attributes));
     Object.keys(record._data.relationships).forEach(name => {
       const data = record._data.relationships[name].data;
       if (!data) return;

@@ -1,4 +1,5 @@
 import babel from '@rollup/plugin-babel'
+import commonjs from '@rollup/plugin-commonjs'
 import replace from '@rollup/plugin-replace'
 import resolve from '@rollup/plugin-node-resolve'
 
@@ -13,7 +14,8 @@ let plugins = [
     __VERSION__: pkg.version,
     preventAssignment: true,
   }),
-  resolve()
+  resolve(),
+  commonjs(),
 ];
 
 export default [

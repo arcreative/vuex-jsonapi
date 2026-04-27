@@ -11,7 +11,9 @@
   "scripts": {
     "build": "npx rollup -c",
     "dev": "npx rollup -c -w",
-    "watch": "npm run dev"
+    "watch": "npm run dev",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -41,6 +43,7 @@
     "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-node-resolve": "^13.0.5",
     "@rollup/plugin-replace": "^3.0.0",
-    "rollup": "^2.58.0"
+    "rollup": "^2.58.0",
+    "vitest": "^4.1.5"
   }
 }

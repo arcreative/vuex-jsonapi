@@ -13,7 +13,6 @@ import mapChannel from './support/map-channel'
 import RequestError from './support/request-error'
 
 export default {
-  version: '__VERSION__',
   Client,
   Record,
   Store,

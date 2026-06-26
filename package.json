@@ -11,7 +11,9 @@
   "scripts": {
     "build": "npx rollup -c",
     "dev": "npx rollup -c -w",
-    "watch": "npm run dev"
+    "watch": "npm run dev",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -40,7 +42,15 @@
   },
   "devDependencies": {
     "@babel/core": "^7.5.4",
+    "@vue/test-utils": "^2.4.0",
+    "pinia": "^2.1.0",
     "rollup": "^1.16.7",
-    "rollup-plugin-babel": "^4.3.3"
+    "rollup-plugin-babel": "^4.3.3",
+    "vitest": "^1.0.0",
+    "vue": "^3.3.0"
+  },
+  "peerDependencies": {
+    "pinia": "^2.0.0",
+    "vue": "^3.0.0"
   }
 }

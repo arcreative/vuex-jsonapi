@@ -22,7 +22,7 @@ export default {
 
     // Extend state from default
     let stateClone = cloneDeep(state);
-    let store = new Store(Vue, state.models);
+    let store = new Store(state.models);
     let apiClient = new Client(store, axiosClient);
 
     return {

@@ -7,8 +7,7 @@ class Store {
   /**
    * Store/cache for API records
    */
-  constructor(Vue, state) {
-    this.Vue = Vue;
+  constructor(state) {
     this.data = state;
   }
 
@@ -136,11 +135,9 @@ class Store {
       let data = item.data;
       if (!data) return;
       if (data instanceof Array) {
-        this.Vue.set(record, name, data.map(item => {
-          return this.getRecord(item.type, item.id);
-        }));
+        record[name] = data.map(item => this.getRecord(item.type, item.id));
       } else {
-        this.Vue.set(record, name, this.getRecord(data.type, data.id));
+        record[name] = this.getRecord(data.type, data.id);
       }
     });
   }

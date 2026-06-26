@@ -28,7 +28,7 @@ export default [
 
   {
     input: 'src/index.esm.js',
-    external: Object.keys(pkg.dependencies),
+    external: (id) => id.startsWith('lodash-es') || Object.keys(pkg.dependencies).includes(id),
     output: [
       { file: pkg.main, format: 'cjs', exports: 'named' },
       { file: pkg.module, format: 'es', exports: 'named' }
@@ -39,7 +39,7 @@ export default [
   // Pinia build
   {
     input: 'src/pinia.esm.js',
-    external: [...Object.keys(pkg.dependencies), 'vue', 'pinia'],
+    external: (id) => id.startsWith('lodash-es') || id === 'vue' || id === 'pinia' || Object.keys(pkg.dependencies).includes(id),
     output: [
       { file: 'dist/pinia-jsonapi.cjs.js', format: 'cjs', exports: 'named' },
       { file: 'dist/pinia-jsonapi.esm.js', format: 'es', exports: 'named' }

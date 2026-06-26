@@ -5,6 +5,16 @@
   "main": "dist/vuex-jsonapi.cjs.js",
   "module": "dist/vuex-jsonapi.esm.js",
   "browser": "dist/vuex-jsonapi.umd.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vuex-jsonapi.esm.js",
+      "require": "./dist/vuex-jsonapi.cjs.js"
+    },
+    "./pinia": {
+      "import": "./dist/pinia-jsonapi.esm.js",
+      "require": "./dist/pinia-jsonapi.cjs.js"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -42,6 +52,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.5.4",
+    "@babel/preset-env": "^7.5.4",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.4.4",
     "@vue/test-utils": "^2.4.0",
     "pinia": "^2.1.0",
     "rollup": "^1.16.7",

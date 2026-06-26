@@ -34,5 +34,16 @@ export default [
       { file: pkg.module, format: 'es', exports: 'named' }
     ],
     plugins: plugins
+  },
+
+  // Pinia build
+  {
+    input: 'src/pinia.esm.js',
+    external: [...Object.keys(pkg.dependencies), 'vue', 'pinia'],
+    output: [
+      { file: 'dist/pinia-jsonapi.cjs.js', format: 'cjs', exports: 'named' },
+      { file: 'dist/pinia-jsonapi.esm.js', format: 'es', exports: 'named' }
+    ],
+    plugins: plugins
   }
 ];

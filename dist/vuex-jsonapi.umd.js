@@ -2277,6 +2277,7 @@
       this.store = store;
       this.http = http;
     }
+
     /**
      * Performs a request to an API endpoint and returns the response object
      *
@@ -2285,8 +2286,6 @@
      * @param options
      * @returns {Promise<*>}
      */
-
-
     request(method, url, {
       data,
       params
@@ -2298,6 +2297,7 @@
         params
       });
     }
+
     /**
      * Performs a request to an API endpoint and materializes and returns the resultant records
      *
@@ -2306,11 +2306,10 @@
      * @param options
      * @returns {Promise<Record|Record[]>}
      */
-
-
     requestRecords(method, url, options = {}) {
       return this.request(method, url, options).then(this.store.materializeRecords.bind(this.store));
     }
+
     /**
      * Wrapped get request
      *
@@ -2319,13 +2318,12 @@
      * @param params
      * @returns {Promise<*>}
      */
-
-
     get(type, id, params) {
       return this.http.get('/' + type + (id ? '/' + id : ''), {
         params
       }).then(this.store.materializeRecords.bind(this.store));
     }
+
     /**
      * Finds one or more records
      *
@@ -2334,16 +2332,14 @@
      * @param options
      * @returns {Promise<Record|Record[]>}
      */
-
-
     find(type, id, options = {}) {
       if (id instanceof Object) {
         options = id;
         id = null;
       }
-
       return this.get(type, id, options);
     }
+
     /**
      * Wrapped post/put/patch request
      *
@@ -2351,26 +2347,22 @@
      * @param options
      * @returns {Promise<*>}
      */
-
-
     save(record, options = {}) {
       return this.http[record.id ? 'patch' : 'post']('/' + record.type + (record.id ? '/' + record.id : ''), this.store.serializeRecord(record), options).then(res => {
         this.store.persist(record, res.data.data.id);
         return this.store.materializeRecords.call(this.store, res);
       });
     }
+
     /**
      * Wrapped delete request
      *
      * @param record
      * @returns {Promise<*>}
      */
-
-
     delete(record) {
       return this.http.delete('/' + record.type + '/' + record.id);
     }
-
   }
 
   /**
@@ -4326,14 +4318,13 @@
       };
       Object.assign(this, data);
     }
+
     /**
      * Persists and materializes record from HTTP response body
      *
      * @param data
      * @returns {Record}
      */
-
-
     materialize(data = {
       id: null,
       type: null,
@@ -4349,13 +4340,12 @@
       this._data.meta = assignIn(this._data.meta, data.meta);
       return this;
     }
+
     /**
      * Gets an attribute without throwing a traversal error
      *
      * @param path
      */
-
-
     get(path) {
       path = path.split('.');
       let val = this;
@@ -4368,28 +4358,25 @@
       });
       return val;
     }
+
     /**
      * Creates an editable clone that will deserialize into the same record
      *
      * @returns {Record}
      */
-
-
     clone() {
       return Object.assign(new Record(this.type), this);
     }
+
     /**
      * Checks if record, attribute, or set of attributes is dirty
      * Note: this does not currently support hasMany relationships
      *
      * @param attributes {null|String|String[]}
      */
-
-
     dirty(attributes = null) {
       if (!this._persisted) return true;
       let dirtyAttrs = this.dirtyAttributes();
-
       if (attributes === null && dirtyAttrs.length) {
         return true;
       } else if (attributes instanceof Array) {
@@ -4398,30 +4385,31 @@
         return dirtyAttrs.indexOf(attributes) !== -1;
       }
     }
+
     /**
      * Returns all dirty attributes
      *
      * @returns {Array}
      */
-
-
     dirtyAttributes() {
       let props = difference(Object.keys(this), ['id', 'type', '_data', '_persisted']);
       return filter(props, prop => {
         let current = this[prop];
         let relationship = this._data.relationships[prop];
-
         if (relationship !== undefined) {
           // Relationship
           if (relationship.data instanceof Array) {
             // Has many
-            current = current || []; // Different number of elements is automatic fail
+            current = current || [];
 
-            if (current.length !== relationship.data.length) return true; // Map the items to sortable identifiers
+            // Different number of elements is automatic fail
+            if (current.length !== relationship.data.length) return true;
 
+            // Map the items to sortable identifiers
             let a = current.map(item => `${item.type}:${item.id}`);
-            let b = relationship.data.map(item => `${item.type}:${item.id}`); // Compare
+            let b = relationship.data.map(item => `${item.type}:${item.id}`);
 
+            // Compare
             return !isEqual(a.sort(), b.sort());
           } else if (relationship.data instanceof Object) {
             // Belongs to
@@ -4435,7 +4423,6 @@
               return true;
             }
           }
-
           return false;
         } else {
           // Attribute
@@ -4443,17 +4430,16 @@
         }
       });
     }
-
   }
 
   class Store {
     /**
      * Store/cache for API records
      */
-    constructor(Vue, state) {
-      this.Vue = Vue;
+    constructor(state) {
       this.data = state;
     }
+
     /**
      * Gets a record, instantiating in store if needed
      *
@@ -4461,14 +4447,13 @@
      * @param id
      * @returns {Record}
      */
-
-
     getRecord(type, id) {
       this.data[type] = this.data[type] || {};
       this.data[type][id] = this.data[type][id] || new Record(type);
       this.data[type][id].id = id;
       return this.data[type][id];
     }
+
     /**
      * Set a new record on the store for subsequent retrieval
      *
@@ -4476,74 +4461,70 @@
      * @param id
      * @returns {Record}
      */
-
-
     persist(record, id) {
       this.data[record.type] = this.data[record.type] || {};
       this.data[record.type][id] = record;
       return record;
     }
+
     /**
      * Materializes and returns records from an HTTP response body
      *
      * @param data
      * @returns {Record|Record[]}
      */
-
-
     materializeRecords(data) {
       // If HTTP response and included is found, materialize all included records first so they're available to the
       // main records
       if (data && data.data && data.data.included) {
         this.materializeRecords(data.data.included);
-      } // Capture the meta
+      }
 
-
+      // Capture the meta
       let meta = null;
-
       if (data && data.data && data.data.meta) {
         meta = data.data.meta;
-      } // If HTTP response, set data to response's data element
+      }
 
-
+      // If HTTP response, set data to response's data element
       if (data && data.data && data.data.data) {
         data = data.data.data;
-      } // Coerce response into array for iteration
+      }
 
-
+      // Coerce response into array for iteration
       let single = false;
       let ret = [];
-
       if (!(data instanceof Array)) {
         single = true;
         data = [data];
-      } // Persist, materialize, hydrate
+      }
 
-
+      // Persist, materialize, hydrate
       forEach(data, item => {
         let record = this.getRecord(item.type, item.id);
         record.materialize(item);
         this.hydrateRecord(record);
         ret.push(record);
-      }); // Transform back to response data format
+      });
 
-      ret = single ? ret[0] : ret; // Append the meta (if applicable)
+      // Transform back to response data format
+      ret = single ? ret[0] : ret;
 
+      // Append the meta (if applicable)
       if (meta) {
         ret.meta = meta;
-      } // Send it on
+      }
 
-
+      // Send it on
       return ret;
     }
+
     /**
      * Serializes record into server-friendly body
      *
      * @param record
      * @returns Object
      */
-
-
     serializeRecord(record) {
       let body = {
         id: record.id,
@@ -4551,11 +4532,9 @@
         attributes: {},
         relationships: {}
       };
-
       for (var key in record) {
         if (record.hasOwnProperty(key) && key.indexOf('_') !== 0 && ['id', 'type', 'meta'].indexOf(key) === -1) {
           var prop = record[key];
-
           if (prop instanceof Record) {
             body.relationships[key] = {
               data: {
@@ -4581,34 +4560,28 @@
           }
         }
       }
-
       return {
         data: body
       };
     }
+
     /**
      * Hydrates top level with attributes and available relationships from store
      *
      * @param record
      */
-
-
     hydrateRecord(record) {
       assignIn(record, record._data.attributes);
       forEach(record._data.relationships, (item, name) => {
         let data = item.data;
         if (!data) return;
-
         if (data instanceof Array) {
-          this.Vue.set(record, name, data.map(item => {
-            return this.getRecord(item.type, item.id);
-          }));
+          record[name] = data.map(item => this.getRecord(item.type, item.id));
         } else {
-          this.Vue.set(record, name, this.getRecord(data.type, data.id));
+          record[name] = this.getRecord(data.type, data.id);
         }
       });
     }
-
   }
 
   /**
@@ -4841,31 +4814,24 @@
     }) {
       super();
       this.httpError = httpError;
-
       this._setMessageFromHttpError();
-
       Object.assign(this, {
         record,
         suppress
       });
     }
-
     request() {
       return get(this, 'httpError.request');
     }
-
     response() {
       return get(this, 'httpError.response');
     }
-
     record() {
       return this.record;
     }
-
     errors() {
       return get(this, 'httpError.response.data.errors') || [];
     }
-
     attributeErrors() {
       let ret = {};
       this.errors().map(error => {
@@ -4875,33 +4841,26 @@
       });
       return ret;
     }
-
     _setMessageFromHttpError() {
       if (this.httpError && this.httpError.response && this.httpError.response.status) {
         switch (this.httpError.response.status) {
           case 400:
             return this.message = 'An error occurred with your request, please contact support with more information';
-
           case 403:
             return this.message = 'You don\'t have permission to perform that action';
-
           case 404:
             return this.message = 'That record cannot be found';
-
           case 422:
             return this.message = 'Error saving record';
-
           default:
             return this.message = UNKNOWN_ERROR;
         }
       }
-
       return this.message = UNKNOWN_ERROR;
     }
-
   }
 
-  var actions = ((apiClient, store) => {
+  var actions = (apiClient, store) => {
     return {
       find({
         commit,
@@ -4961,7 +4920,6 @@
             channel,
             value: requestError
           });
-
           this._vm.$emit('didFindError', requestError);
         }).finally(() => {
           commit('updateLoading', {
@@ -4970,7 +4928,6 @@
           });
         });
       },
-
       save({
         commit
       }, {
@@ -4989,17 +4946,15 @@
             record,
             suppress: suppress || suppressSuccess
           });
-
           this._vm.$emit(persisted ? 'didUpdateRecord' : 'didCreateRecord', {
             record,
             suppress: suppress || suppressSuccess
-          }); // Notify that one or more records of this type changed
+          });
 
-
+          // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
-
           this._vm.$emit('didUpdate' + type, {
             record
           });
@@ -5010,7 +4965,6 @@
           }));
         });
       },
-
       delete({
         commit
       }, {
@@ -5024,13 +4978,12 @@
           this._vm.$emit('didDeleteRecord', {
             record,
             suppress: suppress || suppressSuccess
-          }); // Notify that one or more records of this type changed
+          });
 
-
+          // Notify that one or more records of this type changed
           let type = record.type.split('_').map(part => {
             return part[0].toUpperCase() + part.slice(1, part.length);
           }).join('');
-
           this._vm.$emit('didUpdate' + type, {
             record
           });
@@ -5041,7 +4994,6 @@
           }));
         });
       },
-
       clear({
         commit,
         state
@@ -5073,7 +5025,6 @@
           value: null
         });
       },
-
       materialize({
         dispatch,
         commit
@@ -5089,9 +5040,8 @@
           value: store.materializeRecords(records)
         });
       }
-
     };
-  });
+  };
 
   var getters = {
     channel(state) {
@@ -5099,37 +5049,31 @@
         return state.channels[channel];
       };
     },
-
     error(state) {
       return channel => {
         return state.error[channel];
       };
     },
-
     loading(state) {
       return channel => {
         return state.loading[channel];
       };
     },
-
     meta(state) {
       return channel => {
         return state.meta[channel];
       };
     },
-
     moreRecords(state) {
       return channel => {
         return state.moreRecords[channel];
       };
     },
-
     noRecords(state) {
       return channel => {
         return state.noRecords[channel];
       };
     }
-
   };
 
   var mutations = {
@@ -5139,42 +5083,36 @@
     }) {
       this._vm.$set(state.channels, channel, value);
     },
-
     updateError(state, {
       channel,
       value
     }) {
       this._vm.$set(state.error, channel, value);
     },
-
     updateLoading(state, {
       channel,
       value
     }) {
       this._vm.$set(state.loading, channel, value);
     },
-
     updateMeta(state, {
       channel,
       value
     }) {
       this._vm.$set(state.meta, channel, value);
     },
-
     updateMoreRecords(state, {
       channel,
       value
     }) {
       this._vm.$set(state.moreRecords, channel, value);
     },
-
     updateNoRecords(state, {
       channel,
       value
     }) {
       this._vm.$set(state.noRecords, channel, value);
     }
-
   };
 
   var state = {
@@ -5187,45 +5125,38 @@
     noRecords: {}
   };
 
-  var mapChannel = ((channel, name = null) => {
+  var mapChannel = (channel, name = null) => {
     return {
       [name ? name : 'model']() {
         return this.$store.getters.channel(channel);
       },
-
       [name ? name + 'Error' : 'error']() {
         return this.$store.getters.error(channel);
       },
-
       [name ? name + 'Loading' : 'loading']() {
         return this.$store.getters.loading(channel);
       },
-
       [name ? name + 'Meta' : 'meta']() {
         return this.$store.getters.meta(channel);
       },
-
       [name ? name + 'MoreRecords' : 'moreRecords']() {
         return this.$store.getters.moreRecords(channel);
       },
-
       [name ? name + 'NoRecords' : 'noRecords']() {
         return this.$store.getters.noRecords(channel);
       }
-
     };
-  });
+  };
 
   var index_esm = {
     version: '0.1.0',
     Client,
     Record,
     Store,
-
     install(Vue, axiosClient, options = {}) {
       // Extend state from default
       let stateClone = cloneDeep(state);
-      let store = new Store(Vue, state.models);
+      let store = new Store(state.models);
       let apiClient = new Client(store, axiosClient);
       return {
         apiClient,
@@ -5235,7 +5166,6 @@
         getters
       };
     }
-
   };
 
   exports.Client = Client;

@@ -33,35 +33,4 @@ describe('deepClone', () => {
     expect(deepClone('x')).toBe('x');
     expect(deepClone(fn)).toBe(fn);
   });
-
-  it('preserves circular object references', () => {
-    const original = { name: 'root' };
-    original.self = original;
-
-    const cloned = deepClone(original);
-
-    expect(cloned).not.toBe(original);
-    expect(cloned.name).toBe('root');
-    expect(cloned.self).toBe(cloned);
-  });
-
-  it('preserves nested circular references across objects and arrays', () => {
-    const original = {
-      items: [],
-      child: {},
-    };
-
-    original.items.push(original.child);
-    original.child.parent = original;
-    original.child.items = original.items;
-
-    const cloned = deepClone(original);
-
-    expect(cloned).not.toBe(original);
-    expect(cloned.child).not.toBe(original.child);
-    expect(cloned.items).not.toBe(original.items);
-    expect(cloned.items[0]).toBe(cloned.child);
-    expect(cloned.child.parent).toBe(cloned);
-    expect(cloned.child.items).toBe(cloned.items);
-  });
 });

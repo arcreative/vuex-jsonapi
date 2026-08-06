@@ -63,6 +63,7 @@ class Record {
   clone() {
     let clone = Object.assign(new Record(this.type), this);
     let relationships = this._data.relationships || {};
+    let relationshipNames = this._relationshipNames || [];
 
     Object.keys(clone).forEach(key => {
       if (key === '_data') {
@@ -73,9 +74,11 @@ class Record {
       if (key.startsWith('_') || key === 'id' || key === 'type') return;
 
       // Keep relationship records by reference, but detach relationship arrays.
-      if (relationships[key] !== undefined) {
+      if (relationships[key] !== undefined || relationshipNames.indexOf(key) !== -1) {
         if (this[key] instanceof Array) {
           clone[key] = this[key].slice();
+        } else {
+          clone[key] = this[key];
         }
         return;
       }

@@ -29,6 +29,7 @@ class Store {
     this.data[type] = this.data[type] || {};
     this.data[type][id] = this.data[type][id] || new Record(type);
     this.data[type][id].id = id;
+    this.data[type][id]._relationshipNames = this.relationshipsForType[type] || [];
     return this.data[type][id];
   }
 
@@ -41,6 +42,7 @@ class Store {
    */
   persist(record, id) {
     this.data[record.type] = this.data[record.type] || {};
+    record._relationshipNames = this.relationshipsForType[record.type] || [];
     this.data[record.type][id] = record;
     return record;
   }

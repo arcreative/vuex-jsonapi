@@ -279,6 +279,7 @@ class Record {
   clone() {
     let clone = Object.assign(new Record(this.type), this);
     let relationships = this._data.relationships || {};
+    let relationshipNames = this._relationshipNames || [];
     Object.keys(clone).forEach(key => {
       if (key === '_data') {
         clone._data = deepClone(this._data);
@@ -287,9 +288,11 @@ class Record {
       if (key.startsWith('_') || key === 'id' || key === 'type') return;
 
       // Keep relationship records by reference, but detach relationship arrays.
-      if (relationships[key] !== undefined) {
+      if (relationships[key] !== undefined || relationshipNames.indexOf(key) !== -1) {
         if (this[key] instanceof Array) {
           clone[key] = this[key].slice();
+        } else {
+          clone[key] = this[key];
         }
         return;
       }
@@ -403,6 +406,7 @@ class Store {
     this.data[type] = this.data[type] || {};
     this.data[type][id] = this.data[type][id] || new Record(type);
     this.data[type][id].id = id;
+    this.data[type][id]._relationshipNames = this.relationshipsForType[type] || [];
     return this.data[type][id];
   }
 
@@ -415,6 +419,7 @@ class Store {
    */
   persist(record, id) {
     this.data[record.type] = this.data[record.type] || {};
+    record._relationshipNames = this.relationshipsForType[record.type] || [];
     this.data[record.type][id] = record;
     return record;
   }

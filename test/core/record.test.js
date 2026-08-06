@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import Record from '../../src/core/record'
+import Store from '../../src/core/store'
 
 describe('Record', () => {
   it('materialize deep-clones payload into _data', () => {
@@ -75,6 +76,59 @@ describe('Record', () => {
 
     const secondClone = record.clone();
     expect(secondClone.configuration.notifications.sms).toBe(false);
+  });
+
+  it('clone keeps belongs-to relationships by reference when configured on the store', () => {
+    const store = new Store({ set: (object, key, value) => { object[key] = value; } }, {}, {
+      relationshipsForType: {
+        posts: ['author'],
+      },
+    });
+    const post = store.getRecord('posts', '10');
+    const author = store.getRecord('users', '1');
+
+    post.author = author;
+
+    const copy = post.clone();
+
+    expect(copy.author).toBe(author);
+  });
+
+  it('clone detaches has-many relationship arrays but preserves members when configured on the store', () => {
+    const store = new Store({ set: (object, key, value) => { object[key] = value; } }, {}, {
+      relationshipsForType: {
+        posts: ['comments'],
+      },
+    });
+    const post = store.getRecord('posts', '10');
+    const commentA = store.getRecord('comments', '1');
+    const commentB = store.getRecord('comments', '2');
+
+    post.comments = [commentA, commentB];
+
+    const copy = post.clone();
+
+    expect(copy.comments).not.toBe(post.comments);
+    expect(copy.comments).toEqual(post.comments);
+    expect(copy.comments[0]).toBe(commentA);
+    expect(copy.comments[1]).toBe(commentB);
+  });
+
+  it('clone still deep-clones plain array attributes', () => {
+    const store = new Store({ set: (object, key, value) => { object[key] = value; } }, {}, {
+      relationshipsForType: {
+        posts: ['comments'],
+      },
+    });
+    const post = store.getRecord('posts', '10');
+
+    post.tags = [{ name: 'alpha' }];
+
+    const copy = post.clone();
+    copy.tags[0].name = 'beta';
+
+    expect(copy.tags).not.toBe(post.tags);
+    expect(post.tags[0].name).toBe('alpha');
   });
 
   it('dirtyAttributes ignores underscore-prefixed properties', () => {
